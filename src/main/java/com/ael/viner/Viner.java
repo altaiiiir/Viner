@@ -46,6 +46,8 @@ public class Viner {
     // Create a map to store blockName to Block mappings
     static Map<String, Block> blockMap = new HashMap<>();
 
+    // create vineable blocks set from configurable json
+    static Set<Block> VINEABLE_BLOCKS = new HashSet<>();
 
     public Viner() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -59,7 +61,6 @@ public class Viner {
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
-
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -71,7 +72,27 @@ public class Viner {
                 blockMap.put(blockName, block);
             }
         }
+
+        // Get the path to your config file
+        Path configPath = FMLPaths.CONFIGDIR.get().resolve("viner/vineable_blocks.json");
+        String jsonConfig;
+
+        try {
+            jsonConfig = new String(Files.readAllBytes(configPath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(jsonConfig, JsonObject.class);
+        JsonArray vineableBlocksConfigArray = jsonObject.getAsJsonArray("vineable_blocks");
+
+        // get the array of vineable_blocks from the config
+        for (JsonElement blockName : vineableBlocksConfigArray.asList()) {
+            VINEABLE_BLOCKS.add(blockMap.get(blockName.getAsString()));
+        }
     }
+
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -97,32 +118,10 @@ public class Viner {
         @SubscribeEvent
         public static void onBlockBroken(Event baseEvent) {
 
-            // Get the path to your config file
-            Path configPath = FMLPaths.CONFIGDIR.get().resolve("viner/vineable_blocks.json");
-            String jsonConfig;
-
-            try {
-                jsonConfig = new String(Files.readAllBytes(configPath));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            Gson gson = new Gson();
-            JsonObject jsonObject = gson.fromJson(jsonConfig, JsonObject.class);
-            JsonArray vineableBlocksConfigArray = jsonObject.getAsJsonArray("vineable_blocks");
-
             // ensure event is a blockBreak event
             if (!(baseEvent instanceof BlockEvent.BreakEvent event)) return;
 
             if (!event.getLevel().isClientSide()) {
-                Set<Block> VINEABLE_BLOCKS = new HashSet<>();
-
-                // get the array of vineable_blocks from the config
-                for (JsonElement blockName : vineableBlocksConfigArray.asList()) {
-                    VINEABLE_BLOCKS.add(blockMap.get(blockName.getAsString()));
-                }
-
-                LOGGER.info(VINEABLE_BLOCKS.toString());
 
                 Player player = event.getPlayer();
 
@@ -147,10 +146,7 @@ public class Viner {
                             }
                         }
                         ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
-                        int currentItemDurability = item.getMaxDamage() - item.getDamageValue();
-                        LOGGER.info("Item Damage: " + item.getDamageValue());
                         item.setDamageValue(item.getDamageValue() + blockCount);
-                        LOGGER.info("Item Damage: " + item.getDamageValue());
                     }
                 }
             }
