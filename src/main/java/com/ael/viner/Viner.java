@@ -1,20 +1,21 @@
 package com.ael.viner;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -25,32 +26,28 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Viner.MOD_ID)
-public class Viner
-{
+public class Viner {
     // Define mod id in a common place for everything to reference
     public static final String MOD_ID = "viner";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // Define the list of blocks that can be vein-mined
-    private static final Set<Block> VINEABLE_BLOCKS = new HashSet<>(Arrays.asList(
-            Blocks.STONE,
-            Blocks.IRON_ORE,
-            Blocks.COAL_ORE,
-            Blocks.ACACIA_WOOD,
-            Blocks.OAK_WOOD
-            // Add more blocks here as needed
-    ));
+    // Create a map to store blockName to Block mappings
+    static Map<String, Block> blockMap = new HashMap<>();
 
 
-    public Viner()
-    {
+    public Viner() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // Register the commonSetup method for modloading
@@ -63,22 +60,25 @@ public class Viner
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
 
-
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event)
-    {
-
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        // Populate the blockMap with blockName to Block mappings
+        for (Block block : ForgeRegistries.BLOCKS.getValues()) {
+            ResourceLocation location = ForgeRegistries.BLOCKS.getKey(block);
+            if (location != null) {
+                String blockName = location.toString();
+                blockMap.put(blockName, block);
+            }
+        }
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-    public static class ClientModEvents
-    {
+    public static class ClientModEvents {
 
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
+        public static void onClientSetup(FMLClientSetupEvent event) {
 
         }
 
@@ -97,13 +97,36 @@ public class Viner
         @SubscribeEvent
         public static void onBlockBroken(Event baseEvent) {
 
+            // Get the path to your config file
+            Path configPath = FMLPaths.CONFIGDIR.get().resolve("viner/vineable_blocks.json");
+            String jsonConfig;
+
+            try {
+                jsonConfig = new String(Files.readAllBytes(configPath));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            Gson gson = new Gson();
+            JsonObject jsonObject = gson.fromJson(jsonConfig, JsonObject.class);
+            JsonArray vineableBlocksConfigArray = jsonObject.getAsJsonArray("vineable_blocks");
+
             // ensure event is a blockBreak event
-            if(!(baseEvent instanceof BlockEvent.BreakEvent event)) return;
+            if (!(baseEvent instanceof BlockEvent.BreakEvent event)) return;
 
             if (!event.getLevel().isClientSide()) {
-                LocalPlayer player = Minecraft.getInstance().player;
+                Set<Block> VINEABLE_BLOCKS = new HashSet<>();
+
+                // get the array of vineable_blocks from the config
+                for (JsonElement blockName : vineableBlocksConfigArray.asList()) {
+                    VINEABLE_BLOCKS.add(blockMap.get(blockName.getAsString()));
+                }
+
+                LOGGER.info(VINEABLE_BLOCKS.toString());
+
+                Player player = event.getPlayer();
+
                 if (player != null && player.isCrouching()) {
-                    //player.sendSystemMessage(Component.literal("block broken"));
                     BlockPos pos = event.getPos();
                     BlockState targetBlockState = event.getLevel().getBlockState(pos);
 
@@ -112,7 +135,7 @@ public class Viner
                         Set<BlockPos> visited = new HashSet<>();
                         collectConnectedBlocks((Level) event.getLevel(), pos, targetBlockState, connectedBlocks, visited);
 
-                        int blockCount = 0;
+                        int blockCount = -1;
 
                         // Loop through the connected blocks and break them
                         for (BlockPos connectedPos : connectedBlocks) {
@@ -125,7 +148,8 @@ public class Viner
                         }
                         ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
                         int currentItemDurability = item.getMaxDamage() - item.getDamageValue();
-                        item.setDamageValue(currentItemDurability-blockCount);
+                        LOGGER.info("Item Damage: " + item.getDamageValue());
+                        item.setDamageValue(item.getDamageValue() + blockCount);
                         LOGGER.info("Item Damage: " + item.getDamageValue());
                     }
                 }
