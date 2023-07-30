@@ -48,11 +48,64 @@ public class Viner {
 
     // create vineable blocks set from configurable json
     static Set<Block> VINEABLE_BLOCKS = new HashSet<>();
+    // default config for vineable blocks
+    private static final String DEFAULT_CONFIG_VINEABLE = """
+            {
+              "vineable_blocks": [
+                "minecraft:oak_log",
+                "minecraft:spruce_log",
+                "minecraft:birch_log",
+                "minecraft:jungle_log",
+                "minecraft:acacia_log",
+                "minecraft:dark_oak_log",
+                "minecraft:crimson_stem",
+                "minecraft:warped_stem",
+                "minecraft:stripped_oak_log",
+                "minecraft:stripped_spruce_log",
+                "minecraft:stripped_birch_log",
+                "minecraft:stripped_jungle_log",
+                "minecraft:stripped_acacia_log",
+                "minecraft:stripped_dark_oak_log",
+                "minecraft:stripped_crimson_stem",
+                "minecraft:stripped_warped_stem",
+                "minecraft:iron_ore",
+                "minecraft:gold_ore",
+                "minecraft:diamond_ore",
+                "minecraft:emerald_ore",
+                "minecraft:lapis_ore",
+                "minecraft:redstone_ore",
+                "minecraft:nether_quartz_ore",
+                "minecraft:ancient_debris",
+                "minecraft:coal_ore",
+                "minecraft:copper_ore",
+                "minecraft:tin_ore",
+                "minecraft:lead_ore",
+                "minecraft:aluminum_ore",
+                "minecraft:amethyst_block",
+                "minecraft:deepslate_iron_ore",
+                "minecraft:deepslate_gold_ore",
+                "minecraft:deepslate_diamond_ore",
+                "minecraft:deepslate_emerald_ore",
+                "minecraft:deepslate_lapis_ore",
+                "minecraft:deepslate_redstone_ore",
+                "minecraft:deepslate_copper_ore",
+                "minecraft:deepslate_tin_ore",
+                "minecraft:deepslate_lead_ore",
+                "minecraft:deepslate_aluminum_ore",
+                "minecraft:deepslate_coal_ore",
+                "minecraft:deepslate_lapis_ore",
+                "minecraft:deepslate_copper_ore",
+                "minecraft:deepslate_tin_ore",
+                "minecraft:deepslate_lead_ore",
+                "minecraft:deepslate_aluminum_ore",
+                "minecraft:deepslate_coal_ore"
+              ]
+            }""";
 
     public Viner() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Register the commonSetup method for modloading
+        // Register the commonSetup method for mod loading
         modEventBus.addListener(this::commonSetup);
 
         // Register ourselves for server and other game events we are interested in
@@ -77,6 +130,19 @@ public class Viner {
         Path configPath = FMLPaths.CONFIGDIR.get().resolve("viner/vineable_blocks.json");
         String jsonConfig;
 
+        // Check if the config file exists, if not, create it with default settings
+        if (!Files.exists(configPath)) {
+            try {
+                Files.createDirectories(configPath.getParent());
+                Files.write(configPath, DEFAULT_CONFIG_VINEABLE.getBytes());
+                LOGGER.info("Created default config file at: {}", configPath);
+            } catch (IOException e) {
+                LOGGER.error("Error creating default config file: {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+
+        // read the file in
         try {
             jsonConfig = new String(Files.readAllBytes(configPath));
         } catch (IOException e) {
@@ -145,6 +211,8 @@ public class Viner {
                                 blockCount++;
                             }
                         }
+
+                        // update item damage
                         ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
                         item.setDamageValue(item.getDamageValue() + blockCount);
                     }
