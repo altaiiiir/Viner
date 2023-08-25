@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +16,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -28,8 +31,10 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
+import javax.swing.text.JTextComponent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,6 +56,7 @@ public class Viner {
     // default config for vineable blocks
     private static final String DEFAULT_CONFIG_VINEABLE = """
             {
+              "vineable_limit":5,
               "vineable_blocks": [
                 "minecraft:oak_log",
                 "minecraft:spruce_log",
@@ -102,6 +108,18 @@ public class Viner {
               ]
             }""";
 
+    // Create a keybinding for vining
+    /*
+    private static final String VINE_KEY_CATEGORY = "key.categories.vining";
+    private static final String VINE_KEY_DESC = "key.vining.desc";
+    private static final int VINE_KEY_DEFAULT_KEY = GLFW.GLFW_KEY_LEFT_SHIFT; // Default key: Left Shift
+    private static KeyMapping vineKeyBinding;
+
+     */
+
+    // Default vineable blocks limit, sets how many blocks break per block break
+    private static int VINEABLE_LIMIT = 10;
+
     public Viner() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -113,6 +131,10 @@ public class Viner {
 
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        // Register the keybinding
+        // vineKeyBinding = new KeyMapping(VINE_KEY_DESC, KeyConflictContext.IN_GAME, KeyModifier.NONE, VINE_KEY_DEFAULT_KEY, GLFW.GLFW_KEY_UNKNOWN, VINE_KEY_CATEGORY);
+        // ClientRegistry.registerKeyBinding(vineKeyBinding);
 
     }
 
@@ -151,7 +173,12 @@ public class Viner {
 
         Gson gson = new Gson();
         JsonObject jsonObject = gson.fromJson(jsonConfig, JsonObject.class);
+
+        // Gets the vineable blocks config
         JsonArray vineableBlocksConfigArray = jsonObject.getAsJsonArray("vineable_blocks");
+
+        // Gets the vineable break limit
+        VINEABLE_LIMIT = jsonObject.getAsJsonPrimitive("vineable_limit").getAsInt();
 
         // get the array of vineable_blocks from the config
         for (JsonElement blockName : vineableBlocksConfigArray.asList()) {
@@ -204,11 +231,14 @@ public class Viner {
 
                         // Loop through the connected blocks and break them
                         for (BlockPos connectedPos : connectedBlocks) {
-                            BlockState connectedBlockState = event.getLevel().getBlockState(connectedPos);
-                            if (VINEABLE_BLOCKS.contains(connectedBlockState.getBlock())) {
-                                Block.dropResources(connectedBlockState, (Level) event.getLevel(), event.getPos());
-                                event.getLevel().removeBlock(connectedPos, false);
-                                blockCount++;
+                            // Only mine a configurable amount of blocks
+                            if(blockCount < VINEABLE_LIMIT){
+                                BlockState connectedBlockState = event.getLevel().getBlockState(connectedPos);
+                                if (VINEABLE_BLOCKS.contains(connectedBlockState.getBlock())) {
+                                    Block.dropResources(connectedBlockState, (Level) event.getLevel(), event.getPos());
+                                    event.getLevel().removeBlock(connectedPos, false);
+                                    blockCount++;
+                                }
                             }
                         }
 
