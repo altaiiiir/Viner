@@ -236,41 +236,11 @@ public class Viner {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
 
+            // Add Keybindings to Minecrafts KeyMapping
             Minecraft.getInstance().options.keyMappings = ArrayUtils.add(
                     Minecraft.getInstance().options.keyMappings,
                     SHIFT_KEY_BINDING
             );
-        }
-
-        /**
-         * Recursively collects all connected blocks of the same type starting from a given position
-         *
-         * @param world           The world or level in which the blocks are located
-         * @param pos             The current block position being checked
-         * @param targetState     The block state of the target block type we're looking for
-         * @param connectedBlocks A list to store positions of blocks that match the target type and are connected
-         * @param visited         A set to keep track of block positions that have already been visited
-         *
-         * <p>This method starts from the provided block position and checks in all directions (north, south, east, west, up, down)
-         * to find blocks of the same type. If a matching block is found, its position is added to the connectedBlocks list, and
-         * the method is recursively called for that position to continue the search. The visited set ensures that each block position
-         * is checked only once.</p>
-         */
-        private static void collectConnectedBlocks(Level world, BlockPos pos, BlockState targetState,
-                                                   List<BlockPos> connectedBlocks, Set<BlockPos> visited) {
-            // Check if the current position has not been visited and if its block type matches the target block type
-            if (!visited.contains(pos) && targetState.getBlock().equals(world.getBlockState(pos).getBlock())) {
-                // Mark the current position as visited
-                visited.add(pos);
-                // Add the current position to the list of connected blocks
-                connectedBlocks.add(pos);
-
-                // Check all adjacent blocks in all directions
-                for (Direction direction : Direction.values()) {
-                    collectConnectedBlocks(world, pos.offset(direction.getNormal()),
-                            targetState, connectedBlocks, visited);
-                }
-            }
         }
 
         /**
@@ -313,7 +283,7 @@ public class Viner {
                             // Lists to keep track of connected blocks and visited positions
                             List<BlockPos> connectedBlocks = new ArrayList<>();
                             Set<BlockPos> visited = new HashSet<>();
-                            collectConnectedBlocks((Level) event.getLevel(), pos, targetBlockState, connectedBlocks, visited);
+                            collectConnectedBlocks((Level) event.getLevel(), pos, targetBlockState, connectedBlocks, visited, 0);
 
                             // Counter for the number of blocks broken
                             int blockCount = 0;
@@ -324,9 +294,6 @@ public class Viner {
 
                             // Iterate through the connected blocks and break them
                             for (BlockPos connectedPos : connectedBlocks) {
-
-                                // Ensure we don't break more than the configured limit of blocks
-                                if (blockCount < VINEABLE_LIMIT) {
                                     BlockState connectedBlockState = event.getLevel().getBlockState(connectedPos);
                                     if (VINEABLE_BLOCKS.contains(connectedBlockState.getBlock())) {
 
@@ -343,7 +310,6 @@ public class Viner {
                                         event.getLevel().removeBlock(connectedPos, false);
                                         blockCount++;
                                     }
-                                }
                             }
 
                             // Update the damage value of the tool based on the number of blocks broken
@@ -351,6 +317,43 @@ public class Viner {
                             item.setDamageValue(item.getDamageValue() + blockCount);
                         }
                     }
+                }
+            }
+        }
+        /**
+         * Recursively collects all connected blocks of the same type starting from a given position
+         *
+         * @param world           The world or level in which the blocks are located
+         * @param pos             The current block position being checked
+         * @param targetState     The block state of the target block type we're looking for
+         * @param connectedBlocks A list to store positions of blocks that match the target type and are connected
+         * @param visited         A set to keep track of block positions that have already been visited
+         * @param depth           The maximum depth that recursion can recurse (to avoid deep recursion)
+         *
+         * <p>This method starts from the provided block position and checks in all directions (north, south, east, west, up, down)
+         * to find blocks of the same type. If a matching block is found, its position is added to the connectedBlocks list, and
+         * the method is recursively called for that position to continue the search. The visited set ensures that each block position
+         * is checked only once.</p>
+         */
+        private static void collectConnectedBlocks(Level world, BlockPos pos, BlockState targetState,
+                                                   List<BlockPos> connectedBlocks, Set<BlockPos> visited, int depth) {
+
+            // Base case: if depth exceeds a certain limit, return
+            if (depth >= VINEABLE_LIMIT) {
+                return;
+            }
+
+            // Check if the current position has not been visited and if its block type matches the target block type
+            if (!visited.contains(pos) && targetState.getBlock().equals(world.getBlockState(pos).getBlock())) {
+                // Mark the current position as visited
+                visited.add(pos);
+                // Add the current position to the list of connected blocks
+                connectedBlocks.add(pos);
+
+                // Check all adjacent blocks in all directions
+                for (Direction direction : Direction.values()) {
+                    collectConnectedBlocks(world, pos.offset(direction.getNormal()),
+                            targetState, connectedBlocks, visited, depth + 1);
                 }
             }
         }
