@@ -66,16 +66,13 @@ public class VinerBlockRegistry {
     public static boolean isVeinmineable(Block block) {
         LOGGER.debug("Checking if block {} is veinmineable", block);
 
-        List<Block> vineableBlocks = getVineableBlocks();
-        List<TagKey<Block>> vineableTags = getVineableTags();
-
-        if (vineableBlocks.contains(block)) {
+        if (VINEABLE_BLOCKS.contains(block)) {
             LOGGER.debug("Block {} is veinmineable as a block", block);
             return true;
         }
 
         // Iterating through each tag to check if the block is veinmineable under any tag
-        for (var tagKey : vineableTags) {
+        for (var tagKey : VINEABLE_TAGS) {
             if (ForgeRegistries.BLOCKS.tags().getTag(tagKey).contains(block)) {
                 LOGGER.debug("Block {} is veinmineable under tag {}", block, tagKey);
                 return true;
