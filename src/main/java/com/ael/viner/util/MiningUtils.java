@@ -4,16 +4,17 @@ import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MiningUtils {
 
@@ -54,24 +55,58 @@ public class MiningUtils {
         }
     }
 
-    public static boolean isVeinmineable(Block block) {
-        LOGGER.debug("Checking if block {} is veinmineable", block);
+    public static boolean isVineable(Block block) {
+        return !blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block));
+    }
 
-        if (VinerBlockRegistry.VINEABLE_BLOCKS.contains(block)) {
-            LOGGER.debug("Block {} is veinmineable as a block", block);
-            return true;
-        }
+    private static boolean blockExistsInUnvineableBlocks(Block block){
+        return VinerBlockRegistry.UNVINEABLE_BLOCKS.contains(block);
+    }
 
-        // Iterating through each tag to check if the block is veinmineable under any tag
+    private static boolean blockExistsInVineableBlocks(Block block){
+        return VinerBlockRegistry.VINEABLE_BLOCKS.contains(block);
+    }
+
+    private static boolean blockExistsInTags(Block block){
+        // Iterating through each tag to check if the block is vineable under any tag
         for (var tagKey : VinerBlockRegistry.VINEABLE_TAGS) {
-            if (ForgeRegistries.BLOCKS.tags().getTag(tagKey).contains(block)) {
-                LOGGER.debug("Block {} is veinmineable under tag {}", block, tagKey);
+            if (tagContainsBlock(tagKey, block)) {
                 return true;
             }
         }
-
-        LOGGER.debug("Block {} is not veinmineable", block);
-        return false;  // Return false if the block is not veinmineable
+        return false;
     }
 
+    private static boolean tagContainsBlock(TagKey<Block> tagKey, Block block){
+        return Objects.requireNonNull(ForgeRegistries.BLOCKS.tags()).getTag(tagKey).contains(block);
+    }
+
+    public static int getUnbreakingLevel(ItemStack tool) {
+        return EnchantmentHelper.getTagEnchantmentLevel(Enchantments.UNBREAKING, tool);
+    }
+
+    public static double getDamageChance(int unbreakingLevel) {
+        return 1.0 / (unbreakingLevel + 1);
+    }
+
+    public static void applyDamage(ItemStack tool, int damage) {
+        tool.setDamageValue(tool.getDamageValue() + damage);
+    }
+
+//    public static int getFortuneLevel(ItemStack tool) {
+//        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, tool);
+//    }
+//
+//    public static List<ItemStack> getDrops(BlockState blockState, Level level, BlockPos blockPos, ItemStack tool) {
+//        return blockState.getDrops(new LootParams.Builder((ServerLevel) level)
+//                .withRandom(level.random)
+//                .withParameter(LootContextParams.TOOL, tool)
+//                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(blockPos)));
+//    }
+//
+//    public static void spawnDrops(List<ItemStack> drops, Level level, BlockPos pos) {
+//        for (ItemStack drop : drops) {
+//            Block.popResource(level, pos, drop);
+//        }
+//    }
 }

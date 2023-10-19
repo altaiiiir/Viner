@@ -1,6 +1,7 @@
 package com.ael.viner.network;
 
 import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.util.MiningUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
@@ -75,9 +76,13 @@ public class VeinMiningPacket {
                 blockCount++;
 
                 // Updating tool damage
-                // TODO: Should we take efficacy into account?
                 ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
-                item.setDamageValue(item.getDamageValue() + blockCount);
+                int unbreakingLevel = MiningUtils.getUnbreakingLevel(tool);
+                double chance = MiningUtils.getDamageChance(unbreakingLevel);
+
+                if (Math.random() < chance) {
+                    MiningUtils.applyDamage(tool, blockCount);  // assuming 1 damage per block
+                }
             }
         });
         ctx.get().setPacketHandled(true);

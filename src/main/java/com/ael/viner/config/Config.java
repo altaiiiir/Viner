@@ -38,6 +38,8 @@ public class Config {
     public static final ForgeConfigSpec.IntValue VINEABLE_LIMIT;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> VINEABLE_BLOCKS;
 
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> UNVINEABLE_BLOCKS;
+
     static {
         BUILDER.push("viner");
 
@@ -46,8 +48,13 @@ public class Config {
                 .defineInRange("vineableLimit", 5, 1, Integer.MAX_VALUE);
 
         VINEABLE_BLOCKS = BUILDER
-                .comment("List of blocks/tags that can be vein mined")
+                .comment("List of blocks/tags that can be vein mined. Tags must start with '#'")
                 .defineList("vineableBlocks", Arrays.asList("#minecraft:ores", "#minecraft:logs", "#minecraft:leaves", "#forge:ores"),
+                        obj -> obj instanceof String && ((String) obj).matches("^#?[a-z_]+:[a-z_]+$"));
+
+        UNVINEABLE_BLOCKS = BUILDER
+                .comment("List of blocks that will not vein mined. This will override blocks from tags in VINEABLE_BLOCKS")
+                .defineList("unvineableBlocks", ArrayList::new,
                         obj -> obj instanceof String && ((String) obj).matches("^#?[a-z_]+:[a-z_]+$"));
 
         BUILDER.pop();
@@ -57,7 +64,8 @@ public class Config {
 
     @SubscribeEvent
     public static void onLoadComplete(FMLLoadCompleteEvent event) {
-//        upgradeConfig();
+        // FIXME: It would be nice to have the old config be migrated to the new one.
+        //        upgradeConfig();
     }
 
     public static void upgradeConfig() {
