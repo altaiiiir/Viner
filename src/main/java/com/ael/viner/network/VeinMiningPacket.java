@@ -72,7 +72,6 @@ public class VeinMiningPacket {
             level.removeBlock(blockPos, false);
 
             // Updating tool damage
-            ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
             int unbreakingLevel = MiningUtils.getUnbreakingLevel(tool);
             double chance = MiningUtils.getDamageChance(unbreakingLevel);
 
