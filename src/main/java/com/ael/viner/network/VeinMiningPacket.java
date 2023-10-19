@@ -67,7 +67,6 @@ public class VeinMiningPacket {
 
                 // Removing block from world
                 level.removeBlock(blockPos, false);
-                blockCount++;
 
                 // Updating tool damage
                 ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
