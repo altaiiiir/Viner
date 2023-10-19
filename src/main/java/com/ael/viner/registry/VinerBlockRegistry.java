@@ -1,5 +1,6 @@
-package com.ael.viner;
+package com.ael.viner.registry;
 
+import com.ael.viner.config.Config;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -13,8 +14,8 @@ import java.util.List;
 public class VinerBlockRegistry {
 
     // Lists to store veinmineable blocks and tags
-    private static final List<Block> VINEABLE_BLOCKS = new ArrayList<>();
-    private static final List<TagKey<Block>> VINEABLE_TAGS = new ArrayList<>();
+    public static final List<Block> VINEABLE_BLOCKS = new ArrayList<>();
+    public static final List<TagKey<Block>> VINEABLE_TAGS = new ArrayList<>();
 
     // Logger instance for logging
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -59,25 +60,7 @@ public class VinerBlockRegistry {
     }
 
     // Method to check if a block is veinmineable
-    public static boolean isVeinmineable(Block block) {
-        LOGGER.debug("Checking if block {} is veinmineable", block);
 
-        if (VINEABLE_BLOCKS.contains(block)) {
-            LOGGER.debug("Block {} is veinmineable as a block", block);
-            return true;
-        }
-
-        // Iterating through each tag to check if the block is veinmineable under any tag
-        for (var tagKey : VINEABLE_TAGS) {
-            if (ForgeRegistries.BLOCKS.tags().getTag(tagKey).contains(block)) {
-                LOGGER.debug("Block {} is veinmineable under tag {}", block, tagKey);
-                return true;
-            }
-        }
-
-        LOGGER.debug("Block {} is not veinmineable", block);
-        return false;  // Return false if the block is not veinmineable
-    }
 
     // Method to get the veinmineable limit from the config
     public static int getVeinableLimit(){

@@ -1,5 +1,6 @@
-package com.ael.viner;
+package com.ael.viner.common;
 
+import com.ael.viner.registry.VinerBlockRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
