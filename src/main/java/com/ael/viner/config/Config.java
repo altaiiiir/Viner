@@ -55,7 +55,7 @@ public class Config {
         UNVINEABLE_BLOCKS = BUILDER
                 .comment("List of blocks that will not vein mined. This will override blocks from tags in VINEABLE_BLOCKS")
                 .defineList("unvineableBlocks", ArrayList::new,
-                        obj -> obj instanceof String && ((String) obj).matches("^#?[a-z_]+:[a-z_]+$"));
+                        obj -> obj instanceof String && ((String) obj).matches("^[a-z_]+:[a-z_]+$"));
 
         BUILDER.pop();
 
