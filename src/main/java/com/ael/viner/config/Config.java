@@ -65,7 +65,10 @@ public class Config {
     @SubscribeEvent
     public static void onLoadComplete(FMLLoadCompleteEvent event) {
         // FIXME: It would be nice to have the old config be migrated to the new one.
-        //        upgradeConfig();
+        //        this implementation "mostly" works, but causes a lot of duplication (and is messy code)
+        //        so leaving it out for now.
+
+        // upgradeConfig();
     }
 
     public static void upgradeConfig() {
