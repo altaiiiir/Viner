@@ -1,6 +1,5 @@
 package com.ael.viner.network;
 
-import com.ael.viner.registry.VinerBlockRegistry;
 import com.ael.viner.util.MiningUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -44,6 +43,7 @@ public class VeinMiningPacket {
             Level level = player.level();
             ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
 
+            // I don't think this is possible, but can't be sure.
             if (level.isClientSide())
                 return;
 
@@ -52,22 +52,16 @@ public class VeinMiningPacket {
 
             for (BlockPos blockPos: msg.blockPosList) {
 
-                // Checking for Silk Touch enchantment
-                boolean hasSilkTouch = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
-
-                // Initializing block count
-                int blockCount = 0;
-
-                // Exit condition if block count reaches veinmineable limit
-                if (blockCount >= VinerBlockRegistry.getVeinableLimit())
-                    break;
-
                 // Getting block state of connected block
                 BlockState blockState = level.getBlockState(blockPos);
+
+                // Checking for Silk Touch enchantment
+                boolean hasSilkTouch = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
 
                 if (hasSilkTouch) {
                     Block.popResource(level, firstBlockPos, new ItemStack(blockState.getBlock()));
                 } else {
+                    // FIXME: We need to implement logic for Fortune
                     Block.dropResources(blockState, level, firstBlockPos);
                 }
 
@@ -81,7 +75,7 @@ public class VeinMiningPacket {
                 double chance = MiningUtils.getDamageChance(unbreakingLevel);
 
                 if (Math.random() < chance) {
-                    MiningUtils.applyDamage(tool, blockCount);  // assuming 1 damage per block
+                    MiningUtils.applyDamage(tool, msg.blockPosList.size());  // assuming 1 damage per block
                 }
             }
         });
