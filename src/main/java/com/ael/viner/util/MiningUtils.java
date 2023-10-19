@@ -4,7 +4,9 @@ import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -19,6 +21,49 @@ import java.util.*;
 public class MiningUtils {
 
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    public static void mineBlocks(ServerPlayer player, List<BlockPos> blocksToMine) {
+        if (player == null)
+            return;
+
+        Level level = player.level();
+        ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
+
+        // I don't think this is possible, but can't be sure.
+        if (level.isClientSide())
+            return;
+
+        // We ideally want all the drops to spawn at the first blockPos
+        BlockPos firstBlockPos = blocksToMine.get(0);
+
+        for (BlockPos blockPos: blocksToMine) {
+
+            // Getting block state of connected block
+            BlockState blockState = level.getBlockState(blockPos);
+
+            // Checking for Silk Touch enchantment
+            boolean hasSilkTouch = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
+
+            if (hasSilkTouch) {
+                Block.popResource(level, firstBlockPos, new ItemStack(blockState.getBlock()));
+            } else {
+                // FIXME: We need to implement logic for Fortune
+                Block.dropResources(blockState, level, firstBlockPos);
+            }
+
+            // Removing block from world
+            level.removeBlock(blockPos, false);
+
+            // Updating tool damage
+            int unbreakingLevel = MiningUtils.getUnbreakingLevel(tool);
+            double chance = MiningUtils.getDamageChance(unbreakingLevel);
+
+            if (Math.random() < chance) {
+                MiningUtils.applyDamage(tool, blocksToMine.size());  // assuming 1 damage per block
+            }
+        }
+    }
+
 
     public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState) {
         List<BlockPos> connectedBlocks = new ArrayList<>();

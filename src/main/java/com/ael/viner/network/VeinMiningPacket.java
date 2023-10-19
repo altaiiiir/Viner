@@ -5,13 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.List;
@@ -39,45 +32,9 @@ public class VeinMiningPacket {
 
     public static void processMiningPacket(VeinMiningPacket msg, NetworkEvent.Context context) {
         ServerPlayer player = context.getSender();
-
-        if (player == null)
-            return;
-
-        Level level = player.level();
-        ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
-
-        // I don't think this is possible, but can't be sure.
-        if (level.isClientSide())
-            return;
-
-        // We ideally want all the drops to spawn at the first blockPos
-        BlockPos firstBlockPos = msg.blockPosList.get(0);
-
-        for (BlockPos blockPos: msg.blockPosList) {
-
-            // Getting block state of connected block
-            BlockState blockState = level.getBlockState(blockPos);
-
-            // Checking for Silk Touch enchantment
-            boolean hasSilkTouch = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
-
-            if (hasSilkTouch) {
-                Block.popResource(level, firstBlockPos, new ItemStack(blockState.getBlock()));
-            } else {
-                // FIXME: We need to implement logic for Fortune
-                Block.dropResources(blockState, level, firstBlockPos);
-            }
-
-            // Removing block from world
-            level.removeBlock(blockPos, false);
-
-            // Updating tool damage
-            int unbreakingLevel = MiningUtils.getUnbreakingLevel(tool);
-            double chance = MiningUtils.getDamageChance(unbreakingLevel);
-
-            if (Math.random() < chance) {
-                MiningUtils.applyDamage(tool, msg.blockPosList.size());  // assuming 1 damage per block
-            }
-        }
+        List<BlockPos> blocksToMine = msg.blockPosList;
+        MiningUtils.mineBlocks(player, blocksToMine);
     }
+
+
 }
