@@ -26,39 +26,68 @@ import java.util.Arrays;
 import java.util.List;
 
 
+/**
+ * Configuration class for the Viner mod, defining various settings and their default values.
+ */
 @Mod.EventBusSubscriber(modid = Viner.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
 
+    /**
+     * Logger instance for logging configuration-related messages.
+     */
     private static final Logger LOGGER = LogUtils.getLogger();
 
-
+    /**
+     * Builder for creating the configuration specification.
+     */
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+
+    /**
+     * Configuration specification containing all defined settings.
+     */
     public static final ForgeConfigSpec SPEC;
 
+    /**
+     * Config setting for the maximum number of blocks to vein mine.
+     */
     public static final ForgeConfigSpec.IntValue VINEABLE_LIMIT;
+
+    /**
+     * Config setting for the list of blocks/tags that can be vein mined.
+     */
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> VINEABLE_BLOCKS;
 
+    /**
+     * Config setting for the list of blocks that will not be vein mined,
+     * overriding blocks from tags in VINEABLE_BLOCKS.
+     */
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> UNVINEABLE_BLOCKS;
 
     static {
+        // Start a configuration category for viner settings
         BUILDER.push("viner");
 
+        // Define veinable limit setting
         VINEABLE_LIMIT = BUILDER
                 .comment("Maximum number of blocks to vein mine")
                 .defineInRange("vineableLimit", 5, 1, Integer.MAX_VALUE);
 
+        // Define vineable blocks setting with a validation pattern
         VINEABLE_BLOCKS = BUILDER
                 .comment("List of blocks/tags that can be vein mined. Tags must start with '#'")
-                .defineList("vineableBlocks", Arrays.asList("#minecraft:ores", "#minecraft:logs", "#minecraft:leaves", "#forge:ores"),
+                .defineList("vineableBlocks", Arrays.asList("#minecraft:ores", "#minecraft:logs", "#minecraft:leaves", "#forge:ores", "minecraft:skulk"),
                         obj -> obj instanceof String && ((String) obj).matches("^#?[a-z_]+:[a-z_]+$"));
 
+        // Define unvineable blocks setting with a validation pattern
         UNVINEABLE_BLOCKS = BUILDER
                 .comment("List of blocks that will not vein mined. This will override blocks from tags in VINEABLE_BLOCKS")
                 .defineList("unvineableBlocks", ArrayList::new,
                         obj -> obj instanceof String && ((String) obj).matches("^[a-z_]+:[a-z_]+$"));
 
+        // End the configuration category for viner settings
         BUILDER.pop();
 
+        // Build the configuration specification
         SPEC = BUILDER.build();
     }
 
