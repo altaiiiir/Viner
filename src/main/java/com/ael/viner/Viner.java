@@ -1,5 +1,8 @@
 package com.ael.viner;
 
+import com.ael.viner.common.Common;
+import com.ael.viner.config.Config;
+import com.ael.viner.network.VinerPacketHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,16 +29,11 @@ public class Viner {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
+        VinerPacketHandler.register();
+
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
     }
-
-
-
-
-
-
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
 
 }
