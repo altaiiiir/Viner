@@ -1,17 +1,15 @@
 package com.ael.viner;
 
-import com.ael.viner.client.ClientSetup;
 import com.ael.viner.common.CommonSetup;
 import com.ael.viner.config.Config;
 import com.ael.viner.network.VinerPacketHandler;
-import com.mojang.logging.LogUtils;
+import com.ael.viner.registry.VinerPlayerRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.slf4j.Logger;
 
 /**
  * The main mod class for Viner mod.
@@ -20,20 +18,21 @@ import org.slf4j.Logger;
 @Mod(Viner.MOD_ID)  // The value here should match an entry in the META-INF/mods.toml file
 public class Viner {
 
-    // Define mod id in a common place for everything to reference
-    public static final String MOD_ID = "viner";
+    private static Viner instance;
+    private VinerPlayerRegistry vinerPlayerRegistry;
 
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final String MOD_ID = "viner";
 
     /**
      * Constructor for the Viner class.
      * This is where we register mod-specific functionality.
      */
     public Viner() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Register the ClientSetup method for mod loading
-        modEventBus.addListener(ClientSetup::setup);
+        instance = this;
+        vinerPlayerRegistry = VinerPlayerRegistry.create();
+
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // Register the CommonSetup method for mod loading
         modEventBus.addListener(CommonSetup::setup);
@@ -46,5 +45,14 @@ public class Viner {
 
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
+
+    // I'm not a fan of using a singleton here, but not sure how else to handle this
+    public static Viner getInstance(){
+        return instance;
+    }
+
+    public VinerPlayerRegistry getPlayerRegistry(){
+        return vinerPlayerRegistry;
     }
 }
