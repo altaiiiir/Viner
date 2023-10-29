@@ -4,9 +4,11 @@ import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -44,52 +46,30 @@ public class MiningUtils {
         // Initial block position for spawning all drops
         BlockPos firstBlockPos = blocksToMine.get(0);
 
-        for (int blockIndex = 0; blockIndex < blocksToMine.size(); blockIndex++) {
-            BlockPos blockPos = blocksToMine.get(blockIndex);
+        for (BlockPos blockPos : blocksToMine) {
+            getDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
 
-            // Obtain block state of connected block
-            BlockState blockState = level.getBlockState(blockPos);
-
-            // Check for Silk Touch enchantment
-            boolean hasSilkTouch = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.SILK_TOUCH, tool) > 0;
-
-            // Get Fortune enchantment level
-            int fortuneLevel = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.BLOCK_FORTUNE, tool);
-
-            if (hasSilkTouch) {
-                // Drop block item if Silk Touch is present
-                Block.popResource(level, firstBlockPos, new ItemStack(blockState.getBlock()));
-            } else {
-                // Determine extra drops based on Fortune level
-                Random rand = new Random();
-                int drops = 1;  // Default drops
-                if (fortuneLevel > 0) {
-                    int maxExtraDrops = fortuneLevel * 2;  // Max extra drops is twice the Fortune level
-                    int extraDrops = rand.nextInt(maxExtraDrops + 1);
-                    drops += extraDrops;
-                }
-                for (int i = 0; i < drops; i++) {
-                    // Spawn resources for each drop
-                    Block.dropResources(blockState, level, firstBlockPos);
-                }
-            }
-
-            // Remove block from world
             level.removeBlock(blockPos, false);
-
-            // Update tool damage
-            int unbreakingLevel = MiningUtils.getUnbreakingLevel(tool);
-            double chance = MiningUtils.getDamageChance(unbreakingLevel);
-            double random = Math.random();
-
-            // Apply damage to tool based on chance
-            // skips applying damage from first block - minecraft already accounts for this
-            if (blockIndex != 0 && random < chance) {
-                MiningUtils.applyDamage(tool, 1);  // assuming 1 damage per block
-            }
+            MiningUtils.applyDamage(tool, 1);
         }
     }
 
+    private static void getDrops(ServerPlayer player, ServerLevel level, BlockPos blockPos, ItemStack tool, BlockPos firstBlockPos) {
+
+        // making sure we use the native getDrops method which uses loot tables and takes the tool into account.
+        List<ItemStack> itemsToDrop = Block.getDrops(level.getBlockState(blockPos), level, blockPos, null, player, tool);
+
+        // I'm sure there is a native way to do this, but i cba to look for it, this works for now.
+        // All we're doing is spawning the entities on the first block.
+        for (ItemStack item : itemsToDrop) {
+            double d0 = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
+            double d1 = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
+            double d2 = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
+
+            ItemEntity itemEntity = new ItemEntity(level, firstBlockPos.getX() + d0, firstBlockPos.getY() + d1, firstBlockPos.getZ() + d2, item);
+            level.addFreshEntity(itemEntity);
+        }
+    }
 
 
     /**
@@ -222,9 +202,8 @@ public class MiningUtils {
      * @return The level of the Unbreaking enchantment, or 0 if not present.
      */
     public static int getUnbreakingLevel(ItemStack tool) {
-        return EnchantmentHelper.getTagEnchantmentLevel(Enchantments.UNBREAKING, tool);
+        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, tool);
     }
-
 
     /**
      * Calculates the chance of a tool taking damage based on its Unbreaking enchantment level.
@@ -236,30 +215,33 @@ public class MiningUtils {
         return 1.0 / (unbreakingLevel + 1);
     }
 
-
     /**
-     * Applies damage to a specified tool.
+     * Applies damage to a specified tool. Taking Unbreaking into consideration
      *
      * @param tool The tool to be damaged.
      * @param damage The amount of damage to apply.
      */
     public static void applyDamage(@NotNull ItemStack tool, int damage) {
-        tool.setDamageValue(tool.getDamageValue() + damage);
-    }
 
+        if (!tool.isDamageableItem())
+            return;
 
-    /*
-    public static List<ItemStack> getDrops(BlockState blockState, Level level, BlockPos blockPos, ItemStack tool) {
-        return blockState.getDrops(new LootParams.Builder((ServerLevel) level)
-                .withRandom(level.random)
-                .withParameter(LootContextParams.TOOL, tool)
-                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, level.getBlockEntity(blockPos)));
-    }
+        int unbreakingLevel = getUnbreakingLevel(tool);
+        double chance = getDamageChance(unbreakingLevel);
+        double random = Math.random();
 
-    public static void spawnDrops(List<ItemStack> drops, Level level, BlockPos pos) {
-        for (ItemStack drop : drops) {
-            Block.popResource(level, pos, drop);
+        // Only apply damage if the random value is less than the damage chance.
+        if (random < chance) {
+            int newDamage = tool.getDamageValue() + damage;
+            int maxDamage = tool.getMaxDamage();
+
+            // Prevent over-damaging the tool
+            if (newDamage >= maxDamage) {
+                tool.setDamageValue(maxDamage);
+                tool.shrink(1);  // This effectively destroys the item
+            } else {
+                tool.setDamageValue(newDamage);
+            }
         }
     }
-    */
 }
