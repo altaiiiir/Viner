@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import java.util.List;
 
 import static com.ael.viner.Viner.MOD_ID;
-import static com.ael.viner.common.Common.SHIFT_KEY_BINDING;
+import static com.ael.viner.client.ClientSetup.SHIFT_KEY_BINDING;
 
 /**
  * This class handles the vein mining feature when a block is broken.

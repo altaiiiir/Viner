@@ -1,17 +1,16 @@
-package com.ael.viner.common;
+package com.ael.viner.client;
 
-import com.ael.viner.registry.VinerBlockRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.glfw.GLFW;
 
 
 /**
- * Common class for setting up key mappings and initializing block registry.
+ * client class for setting up key mappings and initializing block registry.
  */
-public class Common {
+public class ClientSetup {
 
     /**
      * Key mapping for the SHIFT key, used in gameplay controls.
@@ -25,9 +24,9 @@ public class Common {
     /**
      * Sets up key mappings and initializes block registry during the common setup phase.
      *
-     * @param event The common setup event, triggered during mod initialization.
+     * @param event The client setup event, triggered during mod initialization.
      */
-    public static void setup(final FMLCommonSetupEvent event) {
+    public static void setup(final FMLClientSetupEvent event) {
 
         // Add the SHIFT key mapping to the game
         Minecraft.getInstance().options.keyMappings = ArrayUtils.add(
@@ -35,8 +34,6 @@ public class Common {
                 SHIFT_KEY_BINDING
         );
 
-        // Set up the block registry
-        VinerBlockRegistry.setup();
     }
 }
 

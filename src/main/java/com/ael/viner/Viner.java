@@ -1,6 +1,7 @@
 package com.ael.viner;
 
-import com.ael.viner.common.Common;
+import com.ael.viner.client.ClientSetup;
+import com.ael.viner.common.CommonSetup;
 import com.ael.viner.config.Config;
 import com.ael.viner.network.VinerPacketHandler;
 import com.mojang.logging.LogUtils;
@@ -31,8 +32,11 @@ public class Viner {
     public Viner() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Register the commonSetup method for mod loading
-        modEventBus.addListener(Common::setup);
+        // Register the ClientSetup method for mod loading
+        modEventBus.addListener(ClientSetup::setup);
+
+        // Register the CommonSetup method for mod loading
+        modEventBus.addListener(CommonSetup::setup);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
