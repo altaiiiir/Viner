@@ -15,7 +15,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.apache.commons.lang3.ArrayUtils;
-import com.ael.viner.registry.VinerBlockRegistry;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -65,7 +64,7 @@ public class ClientModEvents {
         Block block = targetBlockState.getBlock();
 
         // Check if the block can be harvested and is vineable, then perform vein mining
-        if ((VinerBlockRegistry.getVineAll() || MiningUtils.isVineable(block)) &&
+        if (MiningUtils.isVineable(block) &&
                 targetBlockState.canHarvestBlock(level, pos, event.getPlayer())){
             // Collect all connected blocks of the same type
             List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState);
