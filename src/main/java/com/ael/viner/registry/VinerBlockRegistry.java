@@ -22,6 +22,7 @@ public class VinerBlockRegistry {
     public static List<Block> VINEABLE_BLOCKS;
     public static List<Block> UNVINEABLE_BLOCKS;
     public static List<TagKey<Block>> VINEABLE_TAGS = new ArrayList<>();
+    public static Boolean VINE_ALL;
 
     // Logger instance for logging
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -106,13 +107,12 @@ public class VinerBlockRegistry {
         return blockTagKeys;  // Return the list of Vineable tags
     }
 
-    /**
-     * Method to get the Vineable limit from the config.
-     *
-     * @return Vineable limit value.
-     */
     public static int getVeinableLimit(){
         return Config.VINEABLE_LIMIT.get();
+    }
+
+    public static Boolean getVineAll(){
+        return Config.VINE_ALL.get();
     }
 }
 
