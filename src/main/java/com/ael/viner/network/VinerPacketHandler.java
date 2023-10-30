@@ -32,6 +32,9 @@ public class VinerPacketHandler {
         // Register the VeinMiningPacket class and its encoder, decoder, and handler methods
         INSTANCE.registerMessage(id++, VeinMiningPacket.class, VeinMiningPacket::encode,
                 VeinMiningPacket::decode, VeinMiningPacket::handle);
+
+        INSTANCE.registerMessage(id++, VinerKeyPressedPacket.class, VinerKeyPressedPacket::encode,
+                VinerKeyPressedPacket::decode, VinerKeyPressedPacket::handle);
     }
 }
 

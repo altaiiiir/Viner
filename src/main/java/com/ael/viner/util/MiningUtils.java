@@ -102,34 +102,37 @@ public class MiningUtils {
      * @param visited A set to keep track of already visited positions, to avoid infinite recursion.
      */
     private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited) {
+        Queue<BlockPos> queue = new LinkedList<>();
+        queue.add(pos);
 
-        // Return if the position has been visited, or the block type doesn't match, or the limit has been reached
-        if (visited.contains(pos) || !targetState.getBlock().equals(level.getBlockState(pos).getBlock())
-                || connectedBlocks.size() >= VinerBlockRegistry.getVeinableLimit()) {
-            return;
-        }
+        while (!queue.isEmpty() && connectedBlocks.size() < VinerBlockRegistry.getVeinableLimit()) {
+            BlockPos currentPos = queue.poll();
 
-        // Mark the position as visited and add it to the connected blocks list
-        visited.add(pos);
-        connectedBlocks.add(pos);
+            if (visited.contains(currentPos) || !targetState.getBlock().equals(level.getBlockState(currentPos).getBlock())) {
+                continue;
+            }
 
-        // Check all adjacent blocks
-        for (Direction direction : Direction.values()) {
-            collect(level, pos.relative(direction), targetState, connectedBlocks, visited);
-        }
+            visited.add(currentPos);
+            connectedBlocks.add(currentPos);
 
-        // Check all diagonal blocks
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dz = -1; dz <= 1; dz++) {
-                    // Avoid checking the original position
-                    if (dx != 0 || dy != 0 || dz != 0) {
-                        collect(level, pos.offset(dx, dy, dz), targetState, connectedBlocks, visited);
+            // Add all adjacent blocks to the queue
+            for (Direction direction : Direction.values()) {
+                queue.add(currentPos.relative(direction));
+            }
+
+            // Add all diagonal blocks to the queue
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx != 0 || dy != 0 || dz != 0) {
+                            queue.add(currentPos.offset(dx, dy, dz));
+                        }
                     }
                 }
             }
         }
     }
+
 
 
     /**
@@ -142,7 +145,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     public static boolean isVineable(Block block) {
-        return !blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block));
+        return VinerBlockRegistry.getVineAll() || (!blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block)));
     }
 
 
@@ -153,7 +156,7 @@ public class MiningUtils {
      * @return true if the block is unvineable, false otherwise.
      */
     private static boolean blockExistsInUnvineableBlocks(Block block){
-        return VinerBlockRegistry.UNVINEABLE_BLOCKS.contains(block);
+        return VinerBlockRegistry.getUnvineableBlocks().contains(block);
     }
 
     /**
@@ -163,7 +166,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     private static boolean blockExistsInVineableBlocks(Block block){
-        return VinerBlockRegistry.VINEABLE_BLOCKS.contains(block);
+        return VinerBlockRegistry.getVineableBlocks().contains(block);
     }
 
     /**
@@ -174,7 +177,8 @@ public class MiningUtils {
      */
     private static boolean blockExistsInTags(Block block){
         // Iterating through each tag to check if the block is vineable under any tag
-        for (var tagKey : VinerBlockRegistry.VINEABLE_TAGS) {
+        List<TagKey<Block>> tags = VinerBlockRegistry.getVineableTags();
+        for (var tagKey : tags) {
             if (tagContainsBlock(tagKey, block)) {
                 return true;
             }

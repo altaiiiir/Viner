@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -18,10 +17,10 @@ import java.util.Objects;
  */
 public class VinerBlockRegistry {
 
-    // Lists to store Vineable blocks and tags
-    public static List<Block> VINEABLE_BLOCKS;
-    public static List<Block> UNVINEABLE_BLOCKS;
-    public static List<TagKey<Block>> VINEABLE_TAGS = new ArrayList<>();
+    private static List<Block> vineableBlocks;
+    private static List<Block> unvineableBlocks;
+    private static List<TagKey<Block>> vineableTags;
+    private static Boolean vineAll;
 
     // Logger instance for logging
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -29,90 +28,87 @@ public class VinerBlockRegistry {
     /**
      * Setup method to initialize Vineable blocks and tags.
      */
-    public static void setup(){
-        VINEABLE_BLOCKS = new ArrayList<>(getVineableBlocks());
-        UNVINEABLE_BLOCKS = new ArrayList<>(getUnvineableBlocks());
-        VINEABLE_TAGS = new ArrayList<>(getVineableTags());
+    public static void setup() {
+        vineableBlocks = initializeVineableBlocks();
+        unvineableBlocks = initializeUnvineableBlocks();
+        vineableTags = initializeVineableTags();
+        vineAll = initializeVineAll();
     }
 
-    /**
-     * Method to get Vineable blocks from the config.
-     *
-     * @return List of Vineable blocks.
-     */
-    public static @NotNull List<Block> getVineableBlocks() {
+    private static boolean initializeVineAll(){
+        return Config.VINE_ALL.get();
+    }
+
+    private static List<Block> initializeVineableBlocks() {
+        return getBlocksFromConfigEntries((List<String>) Config.VINEABLE_BLOCKS.get());
+    }
+
+    private static List<Block> initializeUnvineableBlocks() {
+        return getBlocksFromConfigEntries((List<String>) Config.UNVINEABLE_BLOCKS.get());
+    }
+
+    private static List<TagKey<Block>> initializeVineableTags() {
+        return getTagsFromConfigEntries((List<String>) Config.VINEABLE_BLOCKS.get());
+    }
+
+    public static List<Block> getVineableBlocks() {
+        if (vineableBlocks == null) {
+            setup();
+        }
+        return vineableBlocks;
+    }
+
+    public static List<Block> getUnvineableBlocks() {
+        if (unvineableBlocks == null) {
+            setup();
+        }
+        return unvineableBlocks;
+    }
+
+    public static List<TagKey<Block>> getVineableTags() {
+        if (vineableTags == null) {
+            setup();
+        }
+        return vineableTags;
+    }
+
+    public static Boolean getVineAll() {
+        if (vineAll == null) {
+            setup();
+        }
+        return vineAll;
+    }
+
+    private static List<Block> getBlocksFromConfigEntries(List<String> entries) {
         List<Block> blocks = new ArrayList<>();
-        for(String entry : Config.VINEABLE_BLOCKS.get()) {  // Iterating through each entry in the config
-            if (!entry.startsWith("#")) {  // Check if the entry is not a tag
-                // Add the block to the list
+        for (String entry : entries) {
+            if (!entry.startsWith("#")) {
                 blocks.add(ForgeRegistries.BLOCKS.getValue(getResourceLocationFromEntry(entry)));
             }
         }
-        return blocks;  // Return the list of Vineable blocks
+        return blocks;
     }
 
-    /**
-     * Method to get Unvineable blocks from the config.
-     *
-     * @return List of Unvineable blocks.
-     */
-    public static @NotNull List<Block> getUnvineableBlocks() {
-        List<Block> blocks = new ArrayList<>();
-        for(String entry : Config.UNVINEABLE_BLOCKS.get()) {  // Iterating through each entry in the config
-            if (!entry.startsWith("#")) {  // Check if the entry is not a tag
-                // Add the block to the list
-                blocks.add(ForgeRegistries.BLOCKS.getValue(getResourceLocationFromEntry(entry)));
+    private static List<TagKey<Block>> getTagsFromConfigEntries(List<String> entries) {
+        List<TagKey<Block>> tags = new ArrayList<>();
+        for (String entry : entries) {
+            if (entry.startsWith("#")) {
+                tags.add(getTagKeyEntry(entry));
             }
         }
-        return blocks;  // Return the list of Unvineable blocks
+        return tags;
     }
 
-    /**
-     * Helper method to get ResourceLocation from an entry string.
-     *
-     * @param entry Entry string.
-     * @return ResourceLocation object.
-     */
-    public static @NotNull ResourceLocation getResourceLocationFromEntry(String entry){
-        String[] splitName = entry.startsWith("#")
-                ? entry.substring(1).split(":")
-                : entry.split(":") ;  // Splitting the entry string
-        return new ResourceLocation(splitName[0], splitName[1]);  // Returning the ResourceLocation object
+    public static ResourceLocation getResourceLocationFromEntry(String entry) {
+        String[] splitName = entry.startsWith("#") ? entry.substring(1).split(":") : entry.split(":");
+        return new ResourceLocation(splitName[0], splitName[1]);
     }
 
-    /**
-     * Helper method to get TagKey from an entry string.
-     *
-     * @param entry Entry string.
-     * @return TagKey object.
-     */
-    public static @NotNull TagKey<Block> getTagKeyEntry(String entry){
-        // Creating and returning the TagKey object
+    public static TagKey<Block> getTagKeyEntry(String entry) {
         return Objects.requireNonNull(ForgeRegistries.BLOCKS.tags()).createTagKey(getResourceLocationFromEntry(entry));
     }
 
-    /**
-     * Method to get Vineable tags from the config.
-     *
-     * @return List of Vineable tags.
-     */
-    public static @NotNull List<TagKey<Block>> getVineableTags() {
-        List<TagKey<Block>> blockTagKeys = new ArrayList<>();
-        for(String entry : Config.VINEABLE_BLOCKS.get()) {  // Iterating through each entry in the config
-            if (entry.startsWith("#")) {  // Check if the entry is a tag
-                blockTagKeys.add(getTagKeyEntry(entry));  // Add the tag to the list
-            }
-        }
-        return blockTagKeys;  // Return the list of Vineable tags
-    }
-
-    /**
-     * Method to get the Vineable limit from the config.
-     *
-     * @return Vineable limit value.
-     */
-    public static int getVeinableLimit(){
+    public static int getVeinableLimit() {
         return Config.VINEABLE_LIMIT.get();
     }
 }
-

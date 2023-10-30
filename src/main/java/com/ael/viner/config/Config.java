@@ -63,6 +63,11 @@ public class Config {
      */
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> UNVINEABLE_BLOCKS;
 
+    /**
+     * Config setting for whether all blocks should be vineable
+     */
+    public static final ForgeConfigSpec.ConfigValue<Boolean> VINE_ALL;
+
     static {
         // Start a configuration category for viner settings
         BUILDER.push("viner");
@@ -83,6 +88,10 @@ public class Config {
                 .comment("List of blocks that will not vein mined. This will override blocks from tags in VINEABLE_BLOCKS")
                 .defineList("unvineableBlocks", ArrayList::new,
                         obj -> obj instanceof String && ((String) obj).matches("^[a-z_]+:[a-z_]+$"));
+
+        VINE_ALL = BUILDER
+                .comment("A 'true' or 'false' field to allow Viner to mine any block.")
+                .define("vineAll", false);
 
         // End the configuration category for viner settings
         BUILDER.pop();
