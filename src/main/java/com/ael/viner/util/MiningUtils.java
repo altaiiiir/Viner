@@ -47,16 +47,17 @@ public class MiningUtils {
         BlockPos firstBlockPos = blocksToMine.get(0);
 
         for (BlockPos blockPos : blocksToMine) {
-            getDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
+            spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
+            spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
-            getXp(level.getBlockState(blockPos), (ServerLevel) level, blockPos, tool);
+            // TODO: Maybe we should stop breaking blocks if the tool is about to break?
+            applyDamage(tool, 1);
 
             level.removeBlock(blockPos, false);
-            MiningUtils.applyDamage(tool, 1);
         }
     }
 
-    private static void getXp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
+    private static void spawnExp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
 
         // Gets current tools enchantments
         int fortuneLevel = tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
@@ -71,7 +72,7 @@ public class MiningUtils {
         }
     }
 
-    private static void getDrops(ServerPlayer player, ServerLevel level, BlockPos blockPos, ItemStack tool, BlockPos firstBlockPos) {
+    private static void spawnBlockDrops(ServerPlayer player, ServerLevel level, BlockPos blockPos, ItemStack tool, BlockPos firstBlockPos) {
 
         // making sure we use the native getDrops method which uses loot tables and takes the tool into account.
         List<ItemStack> itemsToDrop = Block.getDrops(level.getBlockState(blockPos), level, blockPos, null, player, tool);
