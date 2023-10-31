@@ -49,8 +49,25 @@ public class MiningUtils {
         for (BlockPos blockPos : blocksToMine) {
             getDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
 
+            getXp(level.getBlockState(blockPos), (ServerLevel) level, blockPos, tool);
+
             level.removeBlock(blockPos, false);
             MiningUtils.applyDamage(tool, 1);
+        }
+    }
+
+    private static void getXp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
+
+        // Gets current tools enchantments
+        int fortuneLevel = tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
+        int silkTouchLevel = tool.getEnchantmentLevel(Enchantments.SILK_TOUCH);
+
+        // Gets the XP expected to drop from a block
+        int exp = blockState.getExpDrop(level, level.random, blockPos, fortuneLevel, silkTouchLevel);
+
+        // If there's any XP to drop, it drops it
+        if (exp > 0) {
+            blockState.getBlock().popExperience(level, blockPos, exp);
         }
     }
 
