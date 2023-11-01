@@ -50,8 +50,8 @@ public class MiningUtils {
             spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
             spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
-            // TODO: Maybe we should stop breaking blocks if the tool is about to break?
-            applyDamage(tool, 1);
+            // Stop breaking blocks if the tool is about to break?
+            if (applyDamage(tool, 1)) break;
 
             level.removeBlock(blockPos, false);
         }
@@ -242,11 +242,13 @@ public class MiningUtils {
      *
      * @param tool The tool to be damaged.
      * @param damage The amount of damage to apply.
+     *
+     * @return A boolean containing whether the applyDamage function broke the weapon
      */
-    public static void applyDamage(@NotNull ItemStack tool, int damage) {
+    public static boolean applyDamage(@NotNull ItemStack tool, int damage) {
 
         if (!tool.isDamageableItem())
-            return;
+            return false;
 
         int unbreakingLevel = getUnbreakingLevel(tool);
         double chance = getDamageChance(unbreakingLevel);
@@ -261,9 +263,12 @@ public class MiningUtils {
             if (newDamage >= maxDamage) {
                 tool.setDamageValue(maxDamage);
                 tool.shrink(1);  // This effectively destroys the item
+                return true;
             } else {
                 tool.setDamageValue(newDamage);
             }
         }
+
+        return false;
     }
 }
