@@ -45,13 +45,15 @@ public class MiningUtils {
 
         // Initial block position for spawning all drops
         BlockPos firstBlockPos = blocksToMine.get(0);
+        int currentBlock = 1;
 
         for (BlockPos blockPos : blocksToMine) {
+
+            // Stop breaking blocks if the tool is about to break or if it's the first block
+            if (currentBlock++ != 1 && applyDamage(tool, 1)) break;
+
             spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
             spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
-
-            // Stop breaking blocks if the tool is about to break?
-            if (applyDamage(tool, 1)) break;
 
             level.removeBlock(blockPos, false);
         }
@@ -262,7 +264,6 @@ public class MiningUtils {
             // Prevent over-damaging the tool
             if (newDamage >= maxDamage) {
                 tool.setDamageValue(maxDamage);
-                tool.shrink(1);  // This effectively destroys the item
                 return true;
             } else {
                 tool.setDamageValue(newDamage);
