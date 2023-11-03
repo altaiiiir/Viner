@@ -45,16 +45,36 @@ public class MiningUtils {
 
         // Initial block position for spawning all drops
         BlockPos firstBlockPos = blocksToMine.get(0);
+        int currentBlock = 1;
 
         for (BlockPos blockPos : blocksToMine) {
-            getDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
+
+            // Stop breaking blocks if the tool is about to break or if it's the first block
+            if (currentBlock++ != 1 && applyDamage(tool, 1)) break;
+
+            spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
+            spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
             level.removeBlock(blockPos, false);
-            MiningUtils.applyDamage(tool, 1);
         }
     }
 
-    private static void getDrops(ServerPlayer player, ServerLevel level, BlockPos blockPos, ItemStack tool, BlockPos firstBlockPos) {
+    private static void spawnExp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
+
+        // Gets current tools enchantments
+        int fortuneLevel = tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
+        int silkTouchLevel = tool.getEnchantmentLevel(Enchantments.SILK_TOUCH);
+
+        // Gets the XP expected to drop from a block
+        int exp = blockState.getExpDrop(level, level.random, blockPos, fortuneLevel, silkTouchLevel);
+
+        // If there's any XP to drop, it drops it
+        if (exp > 0) {
+            blockState.getBlock().popExperience(level, blockPos, exp);
+        }
+    }
+
+    private static void spawnBlockDrops(ServerPlayer player, ServerLevel level, BlockPos blockPos, ItemStack tool, BlockPos firstBlockPos) {
 
         // making sure we use the native getDrops method which uses loot tables and takes the tool into account.
         List<ItemStack> itemsToDrop = Block.getDrops(level.getBlockState(blockPos), level, blockPos, null, player, tool);
@@ -224,11 +244,13 @@ public class MiningUtils {
      *
      * @param tool The tool to be damaged.
      * @param damage The amount of damage to apply.
+     *
+     * @return A boolean containing whether the applyDamage function broke the weapon
      */
-    public static void applyDamage(@NotNull ItemStack tool, int damage) {
+    public static boolean applyDamage(@NotNull ItemStack tool, int damage) {
 
         if (!tool.isDamageableItem())
-            return;
+            return false;
 
         int unbreakingLevel = getUnbreakingLevel(tool);
         double chance = getDamageChance(unbreakingLevel);
@@ -242,10 +264,12 @@ public class MiningUtils {
             // Prevent over-damaging the tool
             if (newDamage >= maxDamage) {
                 tool.setDamageValue(maxDamage);
-                tool.shrink(1);  // This effectively destroys the item
+                return true;
             } else {
                 tool.setDamageValue(newDamage);
             }
         }
+
+        return false;
     }
 }
