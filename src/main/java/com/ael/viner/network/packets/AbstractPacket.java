@@ -1,4 +1,4 @@
-package com.ael.viner.network;
+package com.ael.viner.network.packets;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

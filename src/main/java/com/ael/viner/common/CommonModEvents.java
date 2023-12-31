@@ -2,12 +2,16 @@ package com.ael.viner.common;
 
 import com.ael.viner.Viner;
 import com.ael.viner.util.MiningUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -19,6 +23,37 @@ import static com.ael.viner.Viner.MOD_ID;
 @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonModEvents {
 
+    private static boolean isShapeVine = false;
+
+    /**
+     * This method is triggered whenever mouse input is detected.
+     * It checks if the configured key is pressed, and if so,
+     * it toggles a boolean state when the mouse is scrolled.
+     *
+     * @param event The Mouse Scrolled Event.
+     */
+    @SubscribeEvent
+    public static void onMouseScrolled(InputEvent.MouseScrollingEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null) return; // Only proceed if in-game
+
+        LocalPlayer player = mc.player;
+        // Check if the custom key is pressed
+        if (Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineKeyPressed()) {
+            double scrollDelta = event.getScrollDelta();
+
+            // If there's any scroll movement, toggle the boolean
+            if (scrollDelta != 0) {
+                isShapeVine = !isShapeVine;
+                Component message = Component.literal(isShapeVine ? "Shape vine enabled" : "Shape vine disabled");
+                player.displayClientMessage(message, true);
+
+                // Cancel the scrolling event to prevent hot bar scrolling
+                event.setCanceled(true);
+            }
+        }
+    }
+
     /**
      * This method is triggered whenever a block is broken.
      * It checks if the SHIFT (or whatever is configured) key is held down, and if so,
@@ -28,15 +63,15 @@ public class CommonModEvents {
      */
     @SubscribeEvent
     public static void onBlockBroken(BlockEvent.BreakEvent event) {
-        ServerPlayer player = (ServerPlayer)event.getPlayer();
+        ServerPlayer player = (ServerPlayer) event.getPlayer();
 
-        if (!Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineKeyPressed()){
+        if (!Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineKeyPressed()) {
             return;
         }
 
         // Get the level and position of the broken block
         LevelAccessor levelAccessor = event.getLevel();
-        Level level = (Level)levelAccessor;
+        Level level = (Level) levelAccessor;
         BlockPos pos = event.getPos();
 
         // Get the state and type of the broken block
@@ -44,14 +79,11 @@ public class CommonModEvents {
         Block block = targetBlockState.getBlock();
 
         // Check if the block can be harvested and is vineable, then perform vein mining
-        if (MiningUtils.isVineable(block) && targetBlockState.canHarvestBlock(level, pos, player)){
+        if (MiningUtils.isVineable(block) && targetBlockState.canHarvestBlock(level, pos, player)) {
             // Collect all connected blocks of the same type
-            List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState, player.getDirection().getNormal());
+            List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState,
+                    player.getDirection().getNormal(), isShapeVine);
             MiningUtils.mineBlocks(player, connectedBlocks);
-
-//            // Create and send a packet to the server to perform vein mining
-//            VeinMiningPacket packet = new VeinMiningPacket(connectedBlocks);
-//            VinerPacketHandler.INSTANCE.sen(packet);
         }
 
     }

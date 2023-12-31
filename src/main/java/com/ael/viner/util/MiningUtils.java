@@ -30,7 +30,7 @@ public class MiningUtils {
      * Mines a list of blocks on behalf of a player, applying the appropriate tool enchantments,
      * updating tool damage, and spawning drops at the position of the first block in the list.
      *
-     * @param player The player who is mining the blocks.
+     * @param player       The player who is mining the blocks.
      * @param blocksToMine A list of BlockPos representing the blocks to be mined.
      */
     public static void mineBlocks(ServerPlayer player, List<BlockPos> blocksToMine) {
@@ -83,9 +83,9 @@ public class MiningUtils {
         // I'm sure there is a native way to do this, but i cba to look for it, this works for now.
         // All we're doing is spawning the entities on the first block.
         for (ItemStack item : itemsToDrop) {
-            double d0 = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
-            double d1 = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
-            double d2 = (double)(level.random.nextFloat() * 0.5F) + 0.25D;
+            double d0 = (double) (level.random.nextFloat() * 0.5F) + 0.25D;
+            double d1 = (double) (level.random.nextFloat() * 0.5F) + 0.25D;
+            double d2 = (double) (level.random.nextFloat() * 0.5F) + 0.25D;
 
             ItemEntity itemEntity = new ItemEntity(level, firstBlockPos.getX() + d0, firstBlockPos.getY() + d1, firstBlockPos.getZ() + d2, item);
             level.addFreshEntity(itemEntity);
@@ -98,21 +98,22 @@ public class MiningUtils {
      * It creates fresh lists for connected blocks and visited positions, then calls the
      * recursive collect method to find all connected blocks.
      *
-     * @param level The level where the block exists.
-     * @param pos The position of the block being vein mined.
+     * @param level       The level where the block exists.
+     * @param pos         The position of the block being vein mined.
      * @param targetState The BlockState of the block being vein mined.
      * @return A list of BlockPos representing all connected blocks of the same type.
      */
-    public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState, Vec3i lookPos) {
+    public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState,
+                                                        Vec3i lookPos, boolean isShapeVine) {
         List<BlockPos> connectedBlocks = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
 
-        if(VinerBlockRegistry.isShapeVine()) {
+        if (isShapeVine) {
             collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited,
                     VinerBlockRegistry.getHeightAbove(), VinerBlockRegistry.getHeightBelow(),
                     VinerBlockRegistry.getWidthLeft(), VinerBlockRegistry.getWidthRight(), 0);
         } else {
-            collect(level,  pos,  targetState, connectedBlocks, visited);
+            collect(level, pos, targetState, connectedBlocks, visited);
         }
 
         return connectedBlocks;
@@ -124,11 +125,11 @@ public class MiningUtils {
      * up to a maximum limit defined in VinerBlockRegistry. This method checks adjacent
      * and diagonal blocks for the same block type, adding them to a list if they match.
      *
-     * @param level The level where the block exists.
-     * @param pos The position of the current block being checked.
-     * @param targetState The BlockState of the block being vein mined.
+     * @param level           The level where the block exists.
+     * @param pos             The position of the current block being checked.
+     * @param targetState     The BlockState of the block being vein mined.
      * @param connectedBlocks A list to store positions of connected blocks of the same type.
-     * @param visited A set to keep track of already visited positions, to avoid infinite recursion.
+     * @param visited         A set to keep track of already visited positions, to avoid infinite recursion.
      */
 
     private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited) {
@@ -168,16 +169,16 @@ public class MiningUtils {
      * This method layers the mining process, using rectangles defined by height and width parameters
      * Mining progresses depth-wise in the direction the player is looking, respecting the limit from VinerBlockRegistry
      *
-     * @param level The level where the block exists
-     * @param lookPos The current look position of the player, determining the depth direction for mining
-     * @param pos Starting position for mining
-     * @param targetState The BlockState of the block to be mined
+     * @param level           The level where the block exists
+     * @param lookPos         The current look position of the player, determining the depth direction for mining
+     * @param pos             Starting position for mining
+     * @param targetState     The BlockState of the block to be mined
      * @param connectedBlocks List to store positions of mined blocks
-     * @param visited Set to track visited positions, preventing recursion loops
-     * @param heightAbove Number of blocks to mine above the starting block
-     * @param heightBelow Number of blocks to mine below the starting block
-     * @param widthLeft Number of blocks to mine left of the starting block
-     * @param widthRight Number of blocks to mine right of the starting block
+     * @param visited         Set to track visited positions, preventing recursion loops
+     * @param heightAbove     Number of blocks to mine above the starting block
+     * @param heightBelow     Number of blocks to mine below the starting block
+     * @param widthLeft       Number of blocks to mine left of the starting block
+     * @param widthRight      Number of blocks to mine right of the starting block
      */
     private static void collectConfigurablePattern(Level level, Vec3i lookPos, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int heightAbove, int heightBelow, int widthLeft, int widthRight, int layerOffset) {
         Queue<BlockPos> queue = new LinkedList<>();
@@ -210,7 +211,7 @@ public class MiningUtils {
             }
 
             // Queue next block in mining direction
-            BlockPos nextDepthBlock = currentPos.offset(lookPos.getX(), lookPos.getY()-layerOffset, lookPos.getZ());
+            BlockPos nextDepthBlock = currentPos.offset(lookPos.getX(), lookPos.getY() - layerOffset, lookPos.getZ());
             if (!visited.contains(nextDepthBlock) && !level.getBlockState(nextDepthBlock).isAir()) {
                 queue.add(nextDepthBlock);
             }
@@ -237,7 +238,7 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is unvineable, false otherwise.
      */
-    private static boolean blockExistsInUnvineableBlocks(Block block){
+    private static boolean blockExistsInUnvineableBlocks(Block block) {
         return VinerBlockRegistry.getUnvineableBlocks().contains(block);
     }
 
@@ -247,7 +248,7 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable, false otherwise.
      */
-    private static boolean blockExistsInVineableBlocks(Block block){
+    private static boolean blockExistsInVineableBlocks(Block block) {
         return VinerBlockRegistry.getVineableBlocks().contains(block);
     }
 
@@ -257,7 +258,7 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable under any tag, false otherwise.
      */
-    private static boolean blockExistsInTags(Block block){
+    private static boolean blockExistsInTags(Block block) {
         // Iterating through each tag to check if the block is vineable under any tag
         List<TagKey<Block>> tags = VinerBlockRegistry.getVineableTags();
         for (var tagKey : tags) {
@@ -273,10 +274,10 @@ public class MiningUtils {
      * Checks if a specified block is contained within a given tag.
      *
      * @param tagKey The key of the tag to check.
-     * @param block The block to check for within the tag.
+     * @param block  The block to check for within the tag.
      * @return true if the tag contains the block, false otherwise.
      */
-    private static boolean tagContainsBlock(TagKey<Block> tagKey, Block block){
+    private static boolean tagContainsBlock(TagKey<Block> tagKey, Block block) {
         return Objects.requireNonNull(ForgeRegistries.BLOCKS.tags()).getTag(tagKey).contains(block);
     }
 
@@ -304,9 +305,8 @@ public class MiningUtils {
     /**
      * Applies damage to a specified tool. Taking Unbreaking into consideration
      *
-     * @param tool The tool to be damaged.
+     * @param tool   The tool to be damaged.
      * @param damage The amount of damage to apply.
-     *
      * @return A boolean containing whether the applyDamage function broke the weapon
      */
     public static boolean applyDamage(@NotNull ItemStack tool, int damage) {

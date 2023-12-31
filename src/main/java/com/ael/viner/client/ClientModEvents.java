@@ -1,7 +1,7 @@
 package com.ael.viner.client;
 
-import com.ael.viner.network.VinerKeyPressedPacket;
 import com.ael.viner.network.VinerPacketHandler;
+import com.ael.viner.network.packets.VinerKeyPressedPacket;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;

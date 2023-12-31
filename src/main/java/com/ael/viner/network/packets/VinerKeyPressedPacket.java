@@ -1,4 +1,4 @@
-package com.ael.viner.network;
+package com.ael.viner.network.packets;
 
 import com.ael.viner.Viner;
 import net.minecraftforge.network.NetworkEvent;
@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 public class VinerKeyPressedPacket extends AbstractPacket<Boolean> {
 
-    public VinerKeyPressedPacket(boolean keyPressed){
+    public VinerKeyPressedPacket(boolean keyPressed) {
         super(keyPressed);
     }
 

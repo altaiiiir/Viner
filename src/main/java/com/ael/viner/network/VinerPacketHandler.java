@@ -1,6 +1,8 @@
 package com.ael.viner.network;
 
 import com.ael.viner.Viner;
+import com.ael.viner.network.packets.VeinMiningPacket;
+import com.ael.viner.network.packets.VinerKeyPressedPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;

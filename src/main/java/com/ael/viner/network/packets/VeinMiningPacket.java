@@ -1,4 +1,4 @@
-package com.ael.viner.network;
+package com.ael.viner.network.packets;
 
 import com.ael.viner.util.MiningUtils;
 import net.minecraft.core.BlockPos;
@@ -6,13 +6,12 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public class VeinMiningPacket extends AbstractPacket<List<BlockPos>>{
+public class VeinMiningPacket extends AbstractPacket<List<BlockPos>> {
 
     public VeinMiningPacket(List<BlockPos> blockPosList) {
         super(blockPosList);
