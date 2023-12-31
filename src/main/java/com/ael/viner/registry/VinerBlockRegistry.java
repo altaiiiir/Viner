@@ -21,6 +21,10 @@ public class VinerBlockRegistry {
     private static List<Block> unvineableBlocks;
     private static List<TagKey<Block>> vineableTags;
     private static Boolean vineAll;
+    private static int heightAbove;
+    private static int heightBelow;
+    private static int widthLeft;
+    private static int widthRight;
 
     // Logger instance for logging
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -33,10 +37,10 @@ public class VinerBlockRegistry {
         unvineableBlocks = initializeUnvineableBlocks();
         vineableTags = initializeVineableTags();
         vineAll = initializeVineAll();
-    }
-
-    private static boolean initializeVineAll(){
-        return Config.VINE_ALL.get();
+        heightAbove = initializeHeightAbove();
+        heightBelow = initializeHeightBelow();
+        widthLeft = initializeWidthLeft();
+        widthRight = initializeWidthRight();
     }
 
     private static List<Block> initializeVineableBlocks() {
@@ -49,6 +53,26 @@ public class VinerBlockRegistry {
 
     private static List<TagKey<Block>> initializeVineableTags() {
         return getTagsFromConfigEntries((List<String>) Config.VINEABLE_BLOCKS.get());
+    }
+
+    private static boolean initializeVineAll() {
+        return Config.VINE_ALL.get();
+    }
+
+    private static int initializeHeightAbove() {
+        return Config.HEIGHT_ABOVE.get();
+    }
+
+    private static int initializeHeightBelow() {
+        return Config.HEIGHT_BELOW.get();
+    }
+
+    private static int initializeWidthLeft() {
+        return Config.WIDTH_LEFT.get();
+    }
+
+    private static int initializeWidthRight() {
+        return Config.WIDTH_RIGHT.get();
     }
 
     public static List<Block> getVineableBlocks() {
@@ -72,11 +96,40 @@ public class VinerBlockRegistry {
         return vineableTags;
     }
 
-    public static Boolean getVineAll() {
+    public static Boolean isVineAll() {
         if (vineAll == null) {
             setup();
         }
         return vineAll;
+    }
+
+    // New getter methods for the new configurations
+    public static int getHeightAbove() {
+        if (heightAbove == 0) {
+            setup();
+        }
+        return heightAbove;
+    }
+
+    public static int getHeightBelow() {
+        if (heightBelow == 0) {
+            setup();
+        }
+        return heightBelow;
+    }
+
+    public static int getWidthLeft() {
+        if (widthLeft == 0) {
+            setup();
+        }
+        return widthLeft;
+    }
+
+    public static int getWidthRight() {
+        if (widthRight == 0) {
+            setup();
+        }
+        return widthRight;
     }
 
     private static List<Block> getBlocksFromConfigEntries(List<String> entries) {
