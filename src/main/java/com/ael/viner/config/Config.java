@@ -69,11 +69,6 @@ public class Config {
     public static final ForgeConfigSpec.ConfigValue<Boolean> VINE_ALL;
 
     /**
-     * Config setting for whether to shape vine
-     */
-    public static final ForgeConfigSpec.ConfigValue<Boolean> SHAPE_VINE;
-
-    /**
      * Config setting for height above mined block for mining zone
      */
     public static final ForgeConfigSpec.IntValue HEIGHT_ABOVE;
@@ -117,10 +112,6 @@ public class Config {
         VINE_ALL = BUILDER
                 .comment("A 'true' or 'false' field to allow Viner to mine any block.")
                 .define("vineAll", false);
-
-        SHAPE_VINE = BUILDER
-                .comment("A 'true' or 'false' field to allow Viner to vine in a set pattern.")
-                .define("shapeVine", false);
 
         // Define heightAbove setting
         HEIGHT_ABOVE = BUILDER
@@ -212,7 +203,7 @@ public class Config {
                     }
 
 
-                    if (!isVeinmineable){
+                    if (!isVeinmineable) {
                         LOGGER.debug("Block {} is not currently veinmineable, adding to config", blockString);
 //                        mergedBlocks.add(blockString);
                     }

@@ -21,7 +21,6 @@ public class VinerBlockRegistry {
     private static List<Block> unvineableBlocks;
     private static List<TagKey<Block>> vineableTags;
     private static Boolean vineAll;
-    private static Boolean shapeVine;
     private static int heightAbove;
     private static int heightBelow;
     private static int widthLeft;
@@ -38,7 +37,6 @@ public class VinerBlockRegistry {
         unvineableBlocks = initializeUnvineableBlocks();
         vineableTags = initializeVineableTags();
         vineAll = initializeVineAll();
-        shapeVine = initializeShapeVine();
         heightAbove = initializeHeightAbove();
         heightBelow = initializeHeightBelow();
         widthLeft = initializeWidthLeft();
@@ -57,11 +55,9 @@ public class VinerBlockRegistry {
         return getTagsFromConfigEntries((List<String>) Config.VINEABLE_BLOCKS.get());
     }
 
-    private static boolean initializeVineAll(){
+    private static boolean initializeVineAll() {
         return Config.VINE_ALL.get();
     }
-
-    private static boolean initializeShapeVine() { return Config.SHAPE_VINE.get(); }
 
     private static int initializeHeightAbove() {
         return Config.HEIGHT_ABOVE.get();
@@ -105,13 +101,6 @@ public class VinerBlockRegistry {
             setup();
         }
         return vineAll;
-    }
-
-    public static Boolean isShapeVine() {
-        if (shapeVine == null) {
-            setup();
-        }
-        return shapeVine;
     }
 
     // New getter methods for the new configurations
