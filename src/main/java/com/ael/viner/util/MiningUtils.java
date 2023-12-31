@@ -4,6 +4,7 @@ import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -102,10 +103,18 @@ public class MiningUtils {
      * @param targetState The BlockState of the block being vein mined.
      * @return A list of BlockPos representing all connected blocks of the same type.
      */
-    public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState) {
+    public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState, Vec3i lookPos) {
         List<BlockPos> connectedBlocks = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
-        collect(level, pos, targetState, connectedBlocks, visited);
+
+        if(VinerBlockRegistry.isShapeVine()) {
+            collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited,
+                    VinerBlockRegistry.getHeightAbove(), VinerBlockRegistry.getHeightBelow(),
+                    VinerBlockRegistry.getWidthLeft(), VinerBlockRegistry.getWidthRight(), 0);
+        } else {
+            collect(level,  pos,  targetState, connectedBlocks, visited);
+        }
+
         return connectedBlocks;
     }
 
@@ -121,6 +130,7 @@ public class MiningUtils {
      * @param connectedBlocks A list to store positions of connected blocks of the same type.
      * @param visited A set to keep track of already visited positions, to avoid infinite recursion.
      */
+
     private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited) {
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(pos);
@@ -153,7 +163,59 @@ public class MiningUtils {
         }
     }
 
+    /**
+     * Efficiently mines blocks in a pattern based on player's look direction and given dimensions
+     * This method layers the mining process, using rectangles defined by height and width parameters
+     * Mining progresses depth-wise in the direction the player is looking, respecting the limit from VinerBlockRegistry
+     *
+     * @param level The level where the block exists
+     * @param lookPos The current look position of the player, determining the depth direction for mining
+     * @param pos Starting position for mining
+     * @param targetState The BlockState of the block to be mined
+     * @param connectedBlocks List to store positions of mined blocks
+     * @param visited Set to track visited positions, preventing recursion loops
+     * @param heightAbove Number of blocks to mine above the starting block
+     * @param heightBelow Number of blocks to mine below the starting block
+     * @param widthLeft Number of blocks to mine left of the starting block
+     * @param widthRight Number of blocks to mine right of the starting block
+     */
+    private static void collectConfigurablePattern(Level level, Vec3i lookPos, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int heightAbove, int heightBelow, int widthLeft, int widthRight, int layerOffset) {
+        Queue<BlockPos> queue = new LinkedList<>();
+        queue.add(pos);
 
+        Vec3i horizontalDirection = new Vec3i(lookPos.getZ(), 0, -lookPos.getX());
+        int blockVolumeToMine = (heightAbove + heightBelow + 1) * (widthLeft + widthRight + 1);
+
+        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= VinerBlockRegistry.getVeinableLimit()) {
+            BlockPos currentPos = queue.poll();
+            Set<BlockPos> potentialBlocks = new HashSet<>();
+
+            /// Collect all potential blocks in the current layer
+            for (int h = -heightBelow; h <= heightAbove; h++) {
+                for (int w = -widthLeft; w <= widthRight; w++) {
+                    BlockPos blockToMine = currentPos.offset(
+                            horizontalDirection.getX() * w, h,
+                            horizontalDirection.getZ() * w);
+                    potentialBlocks.add(blockToMine);
+                }
+            }
+
+            // Remove already visited blocks
+            potentialBlocks.removeAll(visited);
+            for (BlockPos blockToMine : potentialBlocks) {
+                if (targetState.getBlock().equals(level.getBlockState(blockToMine).getBlock())) {
+                    visited.add(blockToMine);
+                    connectedBlocks.add(blockToMine);
+                }
+            }
+
+            // Queue next block in mining direction
+            BlockPos nextDepthBlock = currentPos.offset(lookPos.getX(), lookPos.getY()-layerOffset, lookPos.getZ());
+            if (!visited.contains(nextDepthBlock) && !level.getBlockState(nextDepthBlock).isAir()) {
+                queue.add(nextDepthBlock);
+            }
+        }
+    }
 
     /**
      * Checks if a block is vineable based on predefined criteria.
@@ -165,7 +227,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     public static boolean isVineable(Block block) {
-        return VinerBlockRegistry.getVineAll() || (!blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block)));
+        return VinerBlockRegistry.isVineAll() || (!blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block)));
     }
 
 

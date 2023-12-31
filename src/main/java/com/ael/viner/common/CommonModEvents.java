@@ -44,11 +44,9 @@ public class CommonModEvents {
         Block block = targetBlockState.getBlock();
 
         // Check if the block can be harvested and is vineable, then perform vein mining
-        if (MiningUtils.isVineable(block) &&
-            targetBlockState.canHarvestBlock(level, pos, event.getPlayer())){
+        if (MiningUtils.isVineable(block) && targetBlockState.canHarvestBlock(level, pos, player)){
             // Collect all connected blocks of the same type
-            List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState);
-
+            List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState, player.getDirection().getNormal());
             MiningUtils.mineBlocks(player, connectedBlocks);
 
 //            // Create and send a packet to the server to perform vein mining
