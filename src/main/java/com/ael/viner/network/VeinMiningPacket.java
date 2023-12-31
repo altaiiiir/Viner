@@ -12,66 +12,24 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.function.Supplier;
 
-/**
- * Packet class for handling vein mining operations, encapsulating a list of block positions to be mined.
- */
-public class VeinMiningPacket {
+public class VeinMiningPacket extends AbstractPacket<List<BlockPos>>{
 
-    /**
-     * List of block positions to be vein mined.
-     */
-    private final List<BlockPos> blockPosList;
-
-    /**
-     * Constructor initializing the block position list.
-     *
-     * @param blockPosList List of block positions to be vein mined.
-     */
     public VeinMiningPacket(List<BlockPos> blockPosList) {
-        this.blockPosList = blockPosList;
+        super(blockPosList);
     }
 
-    /**
-     * Encodes this packet into a byte buffer for transmission.
-     *
-     * @param msg The message to encode.
-     * @param buf The byte buffer to write to.
-     */
-    public static void encode(@NotNull VeinMiningPacket msg, @NotNull FriendlyByteBuf buf) {
-        buf.writeCollection(msg.blockPosList, FriendlyByteBuf::writeBlockPos);
-    }
+    public static final PacketFactory<VeinMiningPacket> FACTORY = buf ->
+            new VeinMiningPacket(buf.readCollection(NonNullList::createWithCapacity, FriendlyByteBuf::readBlockPos));
 
-    /**
-     * Decodes a byte buffer into a VeinMiningPacket.
-     *
-     * @param buf The byte buffer to read from.
-     * @return The decoded VeinMiningPacket.
-     */
-
-    public static @NotNull VeinMiningPacket decode(@NotNull FriendlyByteBuf buf) {
-        return new VeinMiningPacket(buf.readCollection(NonNullList::createWithCapacity, FriendlyByteBuf::readBlockPos));
-    }
-
-    /**
-     * Handles this packet on the network thread.
-     *
-     * @param msg The message to handle.
-     * @param ctx The network context.
-     */
-    public static void handle(VeinMiningPacket msg, @NotNull Supplier<NetworkEvent.Context> ctx) {
+    @Override
+    public void handle(AbstractPacket<List<BlockPos>> msg, @NotNull Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> processMiningPacket(msg, ctx.get()));
         ctx.get().setPacketHandled(true);
     }
 
-    /**
-     * Processes the vein mining packet, initiating the vein mining operation.
-     *
-     * @param msg The vein mining packet.
-     * @param context The network context.
-     */
-    public static void processMiningPacket(@NotNull VeinMiningPacket msg, NetworkEvent.@NotNull Context context) {
+    public static void processMiningPacket(@NotNull AbstractPacket<List<BlockPos>> msg, NetworkEvent.@NotNull Context context) {
         ServerPlayer player = context.getSender();
-        List<BlockPos> blocksToMine = msg.blockPosList;
+        List<BlockPos> blocksToMine = msg.getData();
         MiningUtils.mineBlocks(player, blocksToMine);
     }
 }

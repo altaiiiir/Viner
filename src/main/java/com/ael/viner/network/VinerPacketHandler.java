@@ -29,12 +29,17 @@ public class VinerPacketHandler {
      */
     public static void register() {
         int id = 0;
-        // Register the VeinMiningPacket class and its encoder, decoder, and handler methods
-        INSTANCE.registerMessage(id++, VeinMiningPacket.class, VeinMiningPacket::encode,
-                VeinMiningPacket::decode, VeinMiningPacket::handle);
+
+        INSTANCE.registerMessage(id++, VeinMiningPacket.class,
+                VeinMiningPacket::encode,
+                buf -> VeinMiningPacket.decode(buf, VeinMiningPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx)
+        );
 
         INSTANCE.registerMessage(id++, VinerKeyPressedPacket.class, VinerKeyPressedPacket::encode,
-                VinerKeyPressedPacket::decode, VinerKeyPressedPacket::handle);
+                buf -> VinerKeyPressedPacket.decode(buf, VinerKeyPressedPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx));
     }
+
 }
 
