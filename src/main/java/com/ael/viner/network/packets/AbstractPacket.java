@@ -33,6 +33,8 @@ public abstract class AbstractPacket<T> {
     public static <T> void encode(@NotNull AbstractPacket<T> msg, @NotNull FriendlyByteBuf buf){
         if (msg.getData() instanceof Boolean) {
             buf.writeBoolean((Boolean) msg.getData());
+        } else if (msg.getData() instanceof Double) {
+            buf.writeDouble((Double) msg.getData());
         } else if (msg.getData() instanceof Collection) {
             Collection<BlockPos> collection = (Collection<BlockPos>) msg.getData();
             if (!collection.isEmpty() && collection.iterator().next() instanceof BlockPos) {

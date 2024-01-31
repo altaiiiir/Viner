@@ -1,29 +1,36 @@
 package com.ael.viner.common;
 
 import com.ael.viner.Viner;
+import com.ael.viner.network.VinerPacketHandler;
+import com.ael.viner.network.packets.MouseScrollPacket;
 import com.ael.viner.util.MiningUtils;
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 import static com.ael.viner.Viner.MOD_ID;
+import static com.ael.viner.client.ClientModEvents.VINE_KEY_BINDING;
 
 @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonModEvents {
 
-    private static boolean isShapeVine = false;
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    public static boolean isShapeVine = false;
 
     /**
      * This method is triggered whenever mouse input is detected.
@@ -33,24 +40,15 @@ public class CommonModEvents {
      * @param event The Mouse Scrolled Event.
      */
     @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
     public static void onMouseScrolled(InputEvent.MouseScrollingEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return; // Only proceed if in-game
 
-        LocalPlayer player = mc.player;
-        // Check if the custom key is pressed
-        if (Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineKeyPressed()) {
-            double scrollDelta = event.getScrollDelta();
-
-            // If there's any scroll movement, toggle the boolean
-            if (scrollDelta != 0) {
-                isShapeVine = !isShapeVine;
-                Component message = Component.literal(isShapeVine ? "Shape vine enabled" : "Shape vine disabled");
-                player.displayClientMessage(message, true);
-
-                // Cancel the scrolling event to prevent hot bar scrolling
-                event.setCanceled(true);
-            }
+        double scrollDelta = event.getScrollDelta();
+        if (scrollDelta != 0 && VINE_KEY_BINDING.isDown()) {
+            VinerPacketHandler.INSTANCE.sendToServer(new MouseScrollPacket(scrollDelta));
+            event.setCanceled(true);
         }
     }
 

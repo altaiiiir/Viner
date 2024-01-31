@@ -1,6 +1,7 @@
 package com.ael.viner.network;
 
 import com.ael.viner.Viner;
+import com.ael.viner.network.packets.MouseScrollPacket;
 import com.ael.viner.network.packets.VeinMiningPacket;
 import com.ael.viner.network.packets.VinerKeyPressedPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +42,11 @@ public class VinerPacketHandler {
         INSTANCE.registerMessage(id++, VinerKeyPressedPacket.class, VinerKeyPressedPacket::encode,
                 buf -> VinerKeyPressedPacket.decode(buf, VinerKeyPressedPacket.FACTORY),
                 (packet, ctx) -> packet.handle(packet, ctx));
+
+        INSTANCE.registerMessage(id++, MouseScrollPacket.class, MouseScrollPacket::encode,
+                buf -> MouseScrollPacket.decode(buf, MouseScrollPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx));
+
     }
 
 }
