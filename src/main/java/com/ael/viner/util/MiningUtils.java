@@ -4,18 +4,26 @@ import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -53,12 +61,73 @@ public class MiningUtils {
             // Stop breaking blocks if the tool is about to break or if it's the first block
             if (currentBlock++ != 1 && applyDamage(tool, 1)) break;
 
+            // Protect storage by handling inventory before removing the block
+            protectStorage(level, blockPos);
+
             spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
             spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
             level.removeBlock(blockPos, false);
         }
     }
+
+    /**
+     * Protects inventories of blocks being mined by transferring their contents.
+     *
+     * @param level    The level where the block is located.
+     * @param blockPos The position of the block.
+     * @param player   The player performing the mining.
+     */
+    private static void protectStorage2(Level level, BlockPos blockPos, ServerPlayer player) {
+        BlockEntity blockEntity = level.getBlockEntity(blockPos);
+        if (blockEntity != null) {
+            blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
+                NonNullList<ItemStack> inventoryContents = NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
+                for (int i = 0; i < itemHandler.getSlots(); i++) {
+                    inventoryContents.set(i, itemHandler.getStackInSlot(i).copy()); // Make a copy of the stack to avoid modifying the original
+                }
+
+                // Serialize the inventory into a new CompoundTag
+                CompoundTag inventoryTag = new CompoundTag();
+                ContainerHelper.saveAllItems(inventoryTag, inventoryContents, true);
+
+                // Attach the serialized inventory data to the dropped block ItemStack
+                CompoundTag blockEntityTag = new CompoundTag();
+                blockEntityTag.put("Items", inventoryTag.getList("Items", 10));
+
+                ItemStack droppedBlockStack = new ItemStack(blockEntity.getBlockState().getBlock());
+                droppedBlockStack.addTagElement("BlockEntityTag", blockEntityTag);
+
+                // Drop the item in the world
+                double x = blockPos.getX() + 0.5;
+                double y = blockPos.getY() + 0.5;
+                double z = blockPos.getZ() + 0.5;
+                ItemEntity droppedItem = new ItemEntity(level, x, y, z, droppedBlockStack);
+            });
+        }
+    }
+
+    private static void protectStorage(Level level, BlockPos blockPos) {
+        BlockEntity blockEntity = level.getBlockEntity(blockPos);
+        if (blockEntity != null) {
+            blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
+                NonNullList<ItemStack> inventoryContents = NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
+                for (int i = 0; i < itemHandler.getSlots(); i++) {
+                    inventoryContents.set(i, itemHandler.getStackInSlot(i).copy()); // Make a copy of the stack to avoid modifying the original
+                }
+
+                // Serialize the inventory into the BlockEntity's custom persistent data
+                CompoundTag inventoryTag = new CompoundTag();
+                ContainerHelper.saveAllItems(inventoryTag, inventoryContents, true);
+                CompoundTag persistentData = blockEntity.getPersistentData(); // Retrieve custom persistent data
+                persistentData.put("Items", inventoryTag.getList("Items", 10)); // Store inventory data
+
+                // Ensure the BlockEntity knows it has changed
+                blockEntity.setChanged();
+            });
+        }
+    }
+
 
     private static void spawnExp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
 
@@ -75,18 +144,45 @@ public class MiningUtils {
         }
     }
 
+    /**
+     * Spawns block drops for the block at the specified position, applying special handling for Skulker Boxes
+     * to retain their contents in the dropped item.
+     *
+     * @param player        The player breaking the block, used for loot context.
+     * @param level         The server level where the block is located.
+     * @param blockPos      The position of the block being broken.
+     * @param tool          The tool used to break the block, used for loot context.
+     * @param firstBlockPos The position where the dropped items should spawn.
+     */
     private static void spawnBlockDrops(ServerPlayer player, ServerLevel level, BlockPos blockPos, ItemStack tool, BlockPos firstBlockPos) {
+        // Attempt to retrieve the BlockEntity at the given position
+        BlockEntity blockEntity = level.getBlockEntity(blockPos);
+        CompoundTag blockEntityTag = null;
 
-        // making sure we use the native getDrops method which uses loot tables and takes the tool into account.
+        // Check if the BlockEntity is an instance of SkulkerBoxBlockEntity
+        if (blockEntity instanceof ShulkerBoxBlockEntity) {
+            // Save the block entity data, excluding metadata, to a new CompoundTag
+            blockEntityTag = blockEntity.saveWithoutMetadata();
+        }
+
+        // Use the block's loot table to determine the items to drop, considering the tool used and the player
         List<ItemStack> itemsToDrop = Block.getDrops(level.getBlockState(blockPos), level, blockPos, null, player, tool);
 
-        // I'm sure there is a native way to do this, but i cba to look for it, this works for now.
-        // All we're doing is spawning the entities on the first block.
+        // Iterate through the determined items to drop
         for (ItemStack item : itemsToDrop) {
+            // If we have saved BlockEntity data (from a Skulker Box) and the item is a Skulker Box, attach the data
+            if (blockEntityTag != null && item.getItem() instanceof BlockItem && ((BlockItem) item.getItem()).getBlock() instanceof ShulkerBoxBlock) {
+                CompoundTag itemTag = item.getOrCreateTag();
+                itemTag.put("BlockEntityTag", blockEntityTag);
+                item.setTag(itemTag);
+            }
+
+            // Calculate random offset for drop position
             double d0 = (double) (level.random.nextFloat() * 0.5F) + 0.25D;
             double d1 = (double) (level.random.nextFloat() * 0.5F) + 0.25D;
             double d2 = (double) (level.random.nextFloat() * 0.5F) + 0.25D;
 
+            // Create and spawn the item entity at the calculated position
             ItemEntity itemEntity = new ItemEntity(level, firstBlockPos.getX() + d0, firstBlockPos.getY() + d1, firstBlockPos.getZ() + d2, item);
             level.addFreshEntity(itemEntity);
         }

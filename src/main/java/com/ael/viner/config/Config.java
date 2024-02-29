@@ -52,6 +52,9 @@ public class Config {
      */
     public static final ForgeConfigSpec.IntValue VINEABLE_LIMIT;
 
+    // Config setting for exhaustion per block
+    public static final ForgeConfigSpec.DoubleValue EXHAUSTION_PER_BLOCK;
+
     /**
      * Config setting for the list of blocks/tags that can be vein mined.
      */
@@ -91,6 +94,11 @@ public class Config {
     static {
         // Start a configuration category for viner settings
         BUILDER.push("viner");
+
+        // Define exhaustionPerBlock setting
+        EXHAUSTION_PER_BLOCK = BUILDER
+                .comment("Amount of exhaustion added per block mined with vein mining")
+                .defineInRange("exhaustionPerBlock", 0.005, 0.0, Double.MAX_VALUE);
 
         // Define veinable limit setting
         VINEABLE_LIMIT = BUILDER

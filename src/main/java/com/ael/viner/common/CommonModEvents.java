@@ -24,6 +24,7 @@ import java.util.List;
 
 import static com.ael.viner.Viner.MOD_ID;
 import static com.ael.viner.client.ClientModEvents.VINE_KEY_BINDING;
+import static com.ael.viner.config.Config.EXHAUSTION_PER_BLOCK;
 
 @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonModEvents {
@@ -81,7 +82,12 @@ public class CommonModEvents {
             // Collect all connected blocks of the same type
             List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState,
                     player.getDirection().getNormal(), isShapeVine);
+
             MiningUtils.mineBlocks(player, connectedBlocks);
+            // Increase player exhaustion
+            double exhaustionPerBlock = EXHAUSTION_PER_BLOCK.get();
+            player.getFoodData().addExhaustion((float) (exhaustionPerBlock * connectedBlocks.size()));
+
         }
 
     }

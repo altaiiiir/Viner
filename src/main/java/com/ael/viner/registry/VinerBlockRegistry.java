@@ -18,6 +18,7 @@ import java.util.Objects;
 public class VinerBlockRegistry {
 
     private static List<Block> vineableBlocks;
+    private static Float exhaustionPerBlock;
     private static List<Block> unvineableBlocks;
     private static List<TagKey<Block>> vineableTags;
     private static Boolean vineAll;
@@ -164,4 +165,6 @@ public class VinerBlockRegistry {
     public static int getVeinableLimit() {
         return Config.VINEABLE_LIMIT.get();
     }
+
+    public static Double getExhaustionPerBlock() { return Config.EXHAUSTION_PER_BLOCK.get(); }
 }
