@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class VinerPlayerRegistry {
 
-    private Map<UUID, VinerPlayerData> players;
+    private final Map<UUID, VinerPlayerData> players;
 
     public VinerPlayerRegistry(){
         players = new HashMap<>();

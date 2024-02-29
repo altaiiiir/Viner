@@ -1,6 +1,9 @@
 package com.ael.viner.network;
 
 import com.ael.viner.Viner;
+import com.ael.viner.network.packets.MouseScrollPacket;
+import com.ael.viner.network.packets.VeinMiningPacket;
+import com.ael.viner.network.packets.VinerKeyPressedPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -29,12 +32,22 @@ public class VinerPacketHandler {
      */
     public static void register() {
         int id = 0;
-        // Register the VeinMiningPacket class and its encoder, decoder, and handler methods
-        INSTANCE.registerMessage(id++, VeinMiningPacket.class, VeinMiningPacket::encode,
-                VeinMiningPacket::decode, VeinMiningPacket::handle);
+
+        INSTANCE.registerMessage(id++, VeinMiningPacket.class,
+                VeinMiningPacket::encode,
+                buf -> VeinMiningPacket.decode(buf, VeinMiningPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx)
+        );
 
         INSTANCE.registerMessage(id++, VinerKeyPressedPacket.class, VinerKeyPressedPacket::encode,
-                VinerKeyPressedPacket::decode, VinerKeyPressedPacket::handle);
+                buf -> VinerKeyPressedPacket.decode(buf, VinerKeyPressedPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx));
+
+        INSTANCE.registerMessage(id++, MouseScrollPacket.class, MouseScrollPacket::encode,
+                buf -> MouseScrollPacket.decode(buf, MouseScrollPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx));
+
     }
+
 }
 

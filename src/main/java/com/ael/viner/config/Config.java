@@ -68,6 +68,26 @@ public class Config {
      */
     public static final ForgeConfigSpec.ConfigValue<Boolean> VINE_ALL;
 
+    /**
+     * Config setting for height above mined block for mining zone
+     */
+    public static final ForgeConfigSpec.IntValue HEIGHT_ABOVE;
+
+    /**
+     * Config setting for height below mined block for mining zone
+     */
+    public static final ForgeConfigSpec.IntValue HEIGHT_BELOW;
+
+    /**
+     * Config setting for width to the left of mined block for mining zone
+     */
+    public static final ForgeConfigSpec.IntValue WIDTH_LEFT;
+
+    /**
+     * Config setting for width to the right of mined block for mining zone
+     */
+    public static final ForgeConfigSpec.IntValue WIDTH_RIGHT;
+
     static {
         // Start a configuration category for viner settings
         BUILDER.push("viner");
@@ -92,6 +112,34 @@ public class Config {
         VINE_ALL = BUILDER
                 .comment("A 'true' or 'false' field to allow Viner to mine any block.")
                 .define("vineAll", false);
+
+        // Define heightAbove setting
+        HEIGHT_ABOVE = BUILDER
+                .comment("(Must have SHAPE_VINE enabled) The number of blocks to mine above the starting block. " +
+                        "This value sets how far upwards the tool mines from the starting position. " +
+                        "Minimum is 0 (no mining above), and there is no upper limit.")
+                .defineInRange("heightAbove", 1, 0, Integer.MAX_VALUE);
+
+        // Define heightBelow setting
+        HEIGHT_BELOW = BUILDER
+                .comment("(Must have SHAPE_VINE enabled) The number of blocks to mine below the starting block. " +
+                        "This value sets how far downwards the tool mines from the starting position. " +
+                        "Minimum is 0 (no mining below), and there is no upper limit.")
+                .defineInRange("heightBelow", 1, 0, Integer.MAX_VALUE);
+
+        // Define widthLeft setting
+        WIDTH_LEFT = BUILDER
+                .comment("(Must have SHAPE_VINE enabled) The number of blocks to mine to the left of the starting block. " +
+                        "This value sets how far to the left (from the player's perspective) the tool mines. " +
+                        "Minimum is 0 (no mining to the left), and there is no upper limit.")
+                .defineInRange("widthLeft", 0, 0, Integer.MAX_VALUE);
+
+        // Define widthRight setting
+        WIDTH_RIGHT = BUILDER
+                .comment("(Must have SHAPE_VINE enabled) The number of blocks to mine to the right of the starting block. " +
+                        "This value sets how far to the right (from the player's perspective) the tool mines. " +
+                        "Minimum is 0 (no mining to the right), and there is no upper limit.")
+                .defineInRange("widthRight", 0, 0, Integer.MAX_VALUE);
 
         // End the configuration category for viner settings
         BUILDER.pop();
@@ -155,7 +203,7 @@ public class Config {
                     }
 
 
-                    if (!isVeinmineable){
+                    if (!isVeinmineable) {
                         LOGGER.debug("Block {} is not currently veinmineable, adding to config", blockString);
 //                        mergedBlocks.add(blockString);
                     }

@@ -5,7 +5,7 @@ import java.util.UUID;
 public class VinerPlayerData {
 
     private final UUID playerId;
-    private boolean vineKeyPressed = false;
+    public static boolean vineKeyPressed = false;
 
     public VinerPlayerData(UUID playerId){
         this.playerId = playerId;
@@ -16,6 +16,6 @@ public class VinerPlayerData {
     }
 
     public void setVineKeyPressed(boolean pressed) {
-        this.vineKeyPressed = pressed;
+        vineKeyPressed = pressed;
     }
 }

@@ -19,7 +19,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class Viner {
 
     private static Viner instance;
-    private VinerPlayerRegistry vinerPlayerRegistry;
+    private final VinerPlayerRegistry vinerPlayerRegistry;
 
     public static final String MOD_ID = "viner";
 
