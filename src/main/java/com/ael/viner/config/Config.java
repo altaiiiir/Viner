@@ -97,8 +97,8 @@ public class Config {
 
         // Define exhaustionPerBlock setting
         EXHAUSTION_PER_BLOCK = BUILDER
-                .comment("Amount of exhaustion added per block mined with vein mining")
-                .defineInRange("exhaustionPerBlock", 0.005, 0.0, Double.MAX_VALUE);
+                .comment("Amount of exhaustion added per block mined with vein mining.")
+                .defineInRange("exhaustionPerBlock", 0.25, 0.0, 3.0);
 
         // Define veinable limit setting
         VINEABLE_LIMIT = BUILDER
