@@ -165,7 +165,7 @@ public class Config {
         // upgradeConfig();
     }
 
-    public static void upgradeConfig() {
+    private static void upgradeConfig() {
         Path configPath = FMLPaths.CONFIGDIR.get().resolve("viner/vineable_blocks.json");
 
         LOGGER.info("Checking for existing config at: {}", configPath);
