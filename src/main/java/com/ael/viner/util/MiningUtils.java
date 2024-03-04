@@ -1,5 +1,6 @@
 package com.ael.viner.util;
 
+import com.ael.viner.config.Config;
 import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -49,7 +50,7 @@ public class MiningUtils {
         ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
 
         // Check for client side, return early if true
-        if (level.isClientSide())
+        if (level.isClientSide() || Config.VINEABLE_LIMIT.get() <= 0)
             return;
 
         // Initial block position for spawning all drops

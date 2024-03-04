@@ -1,9 +1,11 @@
 package com.ael.viner.common;
 
 import com.ael.viner.Viner;
+import com.ael.viner.gui.ConfigScreen;
 import com.ael.viner.network.VinerPacketHandler;
 import com.ael.viner.network.packets.MouseScrollPacket;
 import com.ael.viner.util.MiningUtils;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -15,9 +17,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -32,6 +36,23 @@ public class CommonModEvents {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static boolean isShapeVine = false;
+
+    @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            Minecraft mc = Minecraft.getInstance();
+            // Check if Minecraft is ready and no screen is displayed
+            if (mc.screen == null) {
+                long windowHandle = mc.getWindow().getWindow();
+                // Check if the Right Shift key is pressed
+                if (InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_RIGHT_SHIFT)) {
+                    // Open your GUI here
+                    mc.setScreen(new ConfigScreen());
+                }
+            }
+        }
+    }
 
     /**
      * This method is triggered whenever mouse input is detected.

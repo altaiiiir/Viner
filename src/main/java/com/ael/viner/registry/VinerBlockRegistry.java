@@ -104,30 +104,29 @@ public class VinerBlockRegistry {
         return vineAll;
     }
 
-    // New getter methods for the new configurations
     public static int getHeightAbove() {
-        if (heightAbove == 0) {
+        if (heightAbove < 0) {
             setup();
         }
         return heightAbove;
     }
 
     public static int getHeightBelow() {
-        if (heightBelow == 0) {
+        if (heightBelow < 0) {
             setup();
         }
         return heightBelow;
     }
 
     public static int getWidthLeft() {
-        if (widthLeft == 0) {
+        if (widthLeft < 0) {
             setup();
         }
         return widthLeft;
     }
 
     public static int getWidthRight() {
-        if (widthRight == 0) {
+        if (widthRight < 0) {
             setup();
         }
         return widthRight;
