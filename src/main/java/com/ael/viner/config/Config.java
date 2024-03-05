@@ -50,6 +50,11 @@ public class Config {
     /**
      * Config setting for the maximum number of blocks to vein mine.
      */
+    public static final ForgeConfigSpec.BooleanValue SHAPE_VINE;
+
+    /**
+     * Config setting for the maximum number of blocks to vein mine.
+     */
     public static final ForgeConfigSpec.IntValue VINEABLE_LIMIT;
 
     // Config setting for exhaustion per block
@@ -91,9 +96,20 @@ public class Config {
      */
     public static final ForgeConfigSpec.IntValue WIDTH_RIGHT;
 
+    /**
+     * Config setting for layer offset of each layer, used for staircase mining
+     */
+    public static final ForgeConfigSpec.IntValue LAYER_OFFSET;
+
+
     static {
         // Start a configuration category for viner settings
         BUILDER.push("viner");
+
+        // Define shapeVine setting
+        SHAPE_VINE = BUILDER
+                .comment("A 'true' or 'false' field to enable Shape Vine Mode.")
+                .define("shapeVine", false);
 
         // Define exhaustionPerBlock setting
         EXHAUSTION_PER_BLOCK = BUILDER
@@ -147,6 +163,12 @@ public class Config {
                 .comment("(Must have SHAPE_VINE enabled) The number of blocks to mine to the right of the starting block. " +
                         "This value sets how far to the right (from the player's perspective) the tool mines. " +
                         "Minimum is 0 (no mining to the right), and there is no upper limit.")
+                .defineInRange("widthRight", 0, 0, Integer.MAX_VALUE);
+
+        // Define widthRight setting
+        LAYER_OFFSET = BUILDER
+                .comment("(Must have SHAPE_VINE enabled) The number of blocks defining the vertical distance between " +
+                        "consecutive layers mined. Allows for staircase mining.")
                 .defineInRange("widthRight", 0, 0, Integer.MAX_VALUE);
 
         // End the configuration category for viner settings

@@ -16,16 +16,16 @@ import java.util.Objects;
  * Registry class for managing Vineable blocks and tags for the Viner mod.
  */
 public class VinerBlockRegistry {
-
     private static List<Block> vineableBlocks;
-    private static Float exhaustionPerBlock;
     private static List<Block> unvineableBlocks;
     private static List<TagKey<Block>> vineableTags;
+    private static Double exhaustionPerBlock;
     private static Boolean vineAll;
     private static int heightAbove;
     private static int heightBelow;
     private static int widthLeft;
     private static int widthRight;
+    private static int layerOffset;
 
     // Logger instance for logging
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -37,11 +37,13 @@ public class VinerBlockRegistry {
         vineableBlocks = initializeVineableBlocks();
         unvineableBlocks = initializeUnvineableBlocks();
         vineableTags = initializeVineableTags();
+        exhaustionPerBlock = initializeExhaustionPerBlock();
         vineAll = initializeVineAll();
         heightAbove = initializeHeightAbove();
         heightBelow = initializeHeightBelow();
         widthLeft = initializeWidthLeft();
         widthRight = initializeWidthRight();
+        layerOffset = initializeLayerOffset();
     }
 
     private static List<Block> initializeVineableBlocks() {
@@ -54,6 +56,10 @@ public class VinerBlockRegistry {
 
     private static List<TagKey<Block>> initializeVineableTags() {
         return getTagsFromConfigEntries((List<String>) Config.VINEABLE_BLOCKS.get());
+    }
+
+    private static Double initializeExhaustionPerBlock() {
+        return Config.EXHAUSTION_PER_BLOCK.get();
     }
 
     private static boolean initializeVineAll() {
@@ -76,6 +82,10 @@ public class VinerBlockRegistry {
         return Config.WIDTH_RIGHT.get();
     }
 
+    private static int initializeLayerOffset() {
+        return Config.LAYER_OFFSET.get();
+    }
+
     public static List<Block> getVineableBlocks() {
         if (vineableBlocks == null) {
             setup();
@@ -95,6 +105,13 @@ public class VinerBlockRegistry {
             setup();
         }
         return vineableTags;
+    }
+
+    public static Double getExhaustionPerBlock() {
+        if (exhaustionPerBlock < 0) {
+            setup();
+        }
+        return exhaustionPerBlock;
     }
 
     public static Boolean isVineAll() {
@@ -132,6 +149,13 @@ public class VinerBlockRegistry {
         return widthRight;
     }
 
+    public static int getLayerOffset() {
+        if (layerOffset < 0) {
+            setup();
+        }
+        return layerOffset;
+    }
+
     private static List<Block> getBlocksFromConfigEntries(List<String> entries) {
         List<Block> blocks = new ArrayList<>();
         for (String entry : entries) {
@@ -164,6 +188,4 @@ public class VinerBlockRegistry {
     public static int getVeinableLimit() {
         return Config.VINEABLE_LIMIT.get();
     }
-
-    public static Double getExhaustionPerBlock() { return Config.EXHAUSTION_PER_BLOCK.get(); }
 }

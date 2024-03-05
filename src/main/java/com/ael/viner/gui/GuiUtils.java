@@ -38,6 +38,24 @@ public class GuiUtils {
                 .build();
     }
 
+    public static AbstractSliderButton createConfigSlider(int x, int y, int width, int height, double upperLimit, String label, Supplier<Double> getter, Consumer<Double> setter) {
+        return new AbstractSliderButton(x, y, width, height, Component.empty(), getter.get() / upperLimit) {
+            {
+                this.value = getter.get() / upperLimit; // Normalize value
+                updateMessage();
+            }
+
+            @Override
+            protected void updateMessage() {
+                setMessage(Component.literal(label + ": " + String.format("%.2f", this.value * upperLimit)));
+            }
+
+            @Override
+            protected void applyValue() {
+                setter.accept(this.value * upperLimit); // Apply value, denormalize it back
+            }
+        };
+    }
 
     public static AbstractSliderButton createConfigSlider(int x, int y, int width, int height, int upperLimit, String label, Supplier<Integer> getter, Consumer<Integer> setter) {
         return new AbstractSliderButton(x, y, width, height, Component.empty(), getter.get() / (double) upperLimit) {

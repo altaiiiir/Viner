@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class ConfigScreen extends Screen {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    private int leftColumnX, rightColumnX, yStart, stepSize;
+    private int boxWidth, padding, leftColumnX, rightColumnX, yStart, stepSize;
 
     public ConfigScreen() {
         super(Component.literal("VINER CONFIGURATIONS"));
@@ -30,28 +30,20 @@ public class ConfigScreen extends Screen {
     protected void init() {
         super.init();
         calculateLayoutParameters();
-        addRedirectButtons();
         addConfigWidgets();
         addApplyButton();
     }
 
     private void calculateLayoutParameters() {
-        leftColumnX = this.width / 4 - 100;
-        rightColumnX = this.width * 3 / 4 - 100;
+        boxWidth = 150;
+        padding = 100;
+
+        leftColumnX = padding;
+
+        rightColumnX = this.width - boxWidth - padding;
+
         yStart = this.height / 4;
         stepSize = 30; // Vertical space between each widget
-    }
-
-    private void addRedirectButtons() {
-        String screenName = "Mineable Block List";
-        Screen mineableBlockListScreen = new BlockListScreen(this, screenName, Config.VINEABLE_BLOCKS.get(), updatedList -> Config.VINEABLE_BLOCKS.set(new ArrayList<>(updatedList)));
-        this.addRenderableWidget(GuiUtils.createRedirectButton(leftColumnX, yStart, 200, 20, screenName, mineableBlockListScreen));
-        yStart += stepSize;
-
-        screenName = "Non-Mineable Block List";
-        Screen nonMineableBlockListScreen = new BlockListScreen(this, screenName, Config.UNVINEABLE_BLOCKS.get(), updatedList -> Config.UNVINEABLE_BLOCKS.set(new ArrayList<>(updatedList)));
-        this.addRenderableWidget(GuiUtils.createRedirectButton(leftColumnX, yStart, 200, 20, screenName, nonMineableBlockListScreen));
-        yStart += stepSize;
     }
 
     private void addConfigWidgets() {
@@ -65,34 +57,63 @@ public class ConfigScreen extends Screen {
         addRightColumnWidgets();
     }
 
+    private void addRedirectButtons() {
+        Screen mineableBlockListScreen = new BlockListScreen(this,  "Mineable Block List", Config.VINEABLE_BLOCKS.get(), updatedList -> Config.VINEABLE_BLOCKS.set(new ArrayList<>(updatedList)));
+        this.addRenderableWidget(GuiUtils.createRedirectButton(leftColumnX, yStart, boxWidth, 20, "Mineable Block List", mineableBlockListScreen));
+
+        yStart += stepSize;
+
+        Screen nonMineableBlockListScreen = new BlockListScreen(this, "Non-Mineable Block List", Config.UNVINEABLE_BLOCKS.get(), updatedList -> Config.UNVINEABLE_BLOCKS.set(new ArrayList<>(updatedList)));
+        this.addRenderableWidget(GuiUtils.createRedirectButton(leftColumnX, yStart, boxWidth, 20, "Non-Mineable Block List", nonMineableBlockListScreen));
+    }
+
     private void addLeftColumnWidgets() {
-        AbstractSliderButton vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, 200, 20, 100, "Vineable Limit", Config.VINEABLE_LIMIT, Config.VINEABLE_LIMIT::set);
+        addRedirectButtons();
+
+        yStart += stepSize * 2;
+
+        Button vineAllButton = GuiUtils.createConfigBooleanButton(leftColumnX, yStart, boxWidth, 20, "Vine All", Config.VINE_ALL, Config.VINE_ALL::set);
+        this.addRenderableWidget(vineAllButton);
+
+        yStart += stepSize;
+
+        AbstractSliderButton vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Vineable Limit", Config.VINEABLE_LIMIT, Config.VINEABLE_LIMIT::set);
         this.addRenderableWidget(vineableLimitField);
 
         yStart += stepSize;
 
-        Button vineAllButton = GuiUtils.createConfigBooleanButton(leftColumnX, yStart, 200, 20, "Vine All", Config.VINE_ALL, Config.VINE_ALL::set);
-        this.addRenderableWidget(vineAllButton);
+        AbstractSliderButton exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Exhaustion Per Block", Config.EXHAUSTION_PER_BLOCK, Config.EXHAUSTION_PER_BLOCK::set);
+        this.addRenderableWidget(exhaustionPerBlockField);
     }
 
     private void addRightColumnWidgets() {
-        AbstractSliderButton heightBelowField = GuiUtils.createConfigSlider(rightColumnX, yStart, 200, 20, 100, "Height Below", Config.HEIGHT_BELOW, Config.HEIGHT_BELOW::set);
+        Button shapeVineButton = GuiUtils.createConfigBooleanButton(rightColumnX, yStart, boxWidth, 20, "Shape Vine", Config.SHAPE_VINE, Config.SHAPE_VINE::set);
+        this.addRenderableWidget(shapeVineButton);
+
+        yStart += stepSize;
+
+        AbstractSliderButton heightBelowField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Below", Config.HEIGHT_BELOW, Config.HEIGHT_BELOW::set);
         this.addRenderableWidget(heightBelowField);
 
         yStart += stepSize;
 
-        AbstractSliderButton heightAboveField = GuiUtils.createConfigSlider(rightColumnX, yStart, 200, 20, 100, "Height Above", Config.HEIGHT_ABOVE, Config.HEIGHT_ABOVE::set);
+        AbstractSliderButton heightAboveField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Above", Config.HEIGHT_ABOVE, Config.HEIGHT_ABOVE::set);
         this.addRenderableWidget(heightAboveField);
 
         yStart += stepSize;
 
-        AbstractSliderButton widthLeftField = GuiUtils.createConfigSlider(rightColumnX, yStart, 200, 20, 100, "Width Left", Config.WIDTH_LEFT, Config.WIDTH_LEFT::set);
+        AbstractSliderButton widthLeftField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Left", Config.WIDTH_LEFT, Config.WIDTH_LEFT::set);
         this.addRenderableWidget(widthLeftField);
 
         yStart += stepSize;
 
-        AbstractSliderButton widthRightField = GuiUtils.createConfigSlider(rightColumnX, yStart, 200, 20, 100, "Width Right", Config.WIDTH_RIGHT, Config.WIDTH_RIGHT::set);
+        AbstractSliderButton widthRightField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Right", Config.WIDTH_RIGHT, Config.WIDTH_RIGHT::set);
         this.addRenderableWidget(widthRightField);
+
+        yStart += stepSize;
+
+        AbstractSliderButton layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Layer Offset", Config.LAYER_OFFSET, Config.LAYER_OFFSET::set);
+        this.addRenderableWidget(layerOffsetField);
     }
 
     private void addApplyButton() {

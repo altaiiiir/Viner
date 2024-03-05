@@ -72,42 +72,6 @@ public class MiningUtils {
         }
     }
 
-    /**
-     * Protects inventories of blocks being mined by transferring their contents.
-     *
-     * @param level    The level where the block is located.
-     * @param blockPos The position of the block.
-     * @param player   The player performing the mining.
-     */
-    private static void protectStorage2(Level level, BlockPos blockPos, ServerPlayer player) {
-        BlockEntity blockEntity = level.getBlockEntity(blockPos);
-        if (blockEntity != null) {
-            blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-                NonNullList<ItemStack> inventoryContents = NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
-                for (int i = 0; i < itemHandler.getSlots(); i++) {
-                    inventoryContents.set(i, itemHandler.getStackInSlot(i).copy()); // Make a copy of the stack to avoid modifying the original
-                }
-
-                // Serialize the inventory into a new CompoundTag
-                CompoundTag inventoryTag = new CompoundTag();
-                ContainerHelper.saveAllItems(inventoryTag, inventoryContents, true);
-
-                // Attach the serialized inventory data to the dropped block ItemStack
-                CompoundTag blockEntityTag = new CompoundTag();
-                blockEntityTag.put("Items", inventoryTag.getList("Items", 10));
-
-                ItemStack droppedBlockStack = new ItemStack(blockEntity.getBlockState().getBlock());
-                droppedBlockStack.addTagElement("BlockEntityTag", blockEntityTag);
-
-                // Drop the item in the world
-                double x = blockPos.getX() + 0.5;
-                double y = blockPos.getY() + 0.5;
-                double z = blockPos.getZ() + 0.5;
-                ItemEntity droppedItem = new ItemEntity(level, x, y, z, droppedBlockStack);
-            });
-        }
-    }
-
     private static void protectStorage(Level level, BlockPos blockPos) {
         BlockEntity blockEntity = level.getBlockEntity(blockPos);
         if (blockEntity != null) {
@@ -208,7 +172,7 @@ public class MiningUtils {
         if (isShapeVine) {
             collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited,
                     VinerBlockRegistry.getHeightAbove(), VinerBlockRegistry.getHeightBelow(),
-                    VinerBlockRegistry.getWidthLeft(), VinerBlockRegistry.getWidthRight(), 0);
+                    VinerBlockRegistry.getWidthLeft(), VinerBlockRegistry.getWidthRight(), VinerBlockRegistry.getLayerOffset());
         } else {
             collect(level, pos, targetState, connectedBlocks, visited);
         }

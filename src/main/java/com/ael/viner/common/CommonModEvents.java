@@ -1,11 +1,13 @@
 package com.ael.viner.common;
 
 import com.ael.viner.Viner;
+import com.ael.viner.client.ClientModEvents;
+import com.ael.viner.config.Config;
 import com.ael.viner.gui.ConfigScreen;
 import com.ael.viner.network.VinerPacketHandler;
 import com.ael.viner.network.packets.MouseScrollPacket;
+import com.ael.viner.registry.VinerBlockRegistry;
 import com.ael.viner.util.MiningUtils;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -21,35 +23,25 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
 import java.util.List;
 
 import static com.ael.viner.Viner.MOD_ID;
 import static com.ael.viner.client.ClientModEvents.VINE_KEY_BINDING;
-import static com.ael.viner.config.Config.EXHAUSTION_PER_BLOCK;
 
 @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonModEvents {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static boolean isShapeVine = false;
-
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             Minecraft mc = Minecraft.getInstance();
-            // Check if Minecraft is ready and no screen is displayed
-            if (mc.screen == null) {
-                long windowHandle = mc.getWindow().getWindow();
-                // Check if the Right Shift key is pressed
-                if (InputConstants.isKeyDown(windowHandle, GLFW.GLFW_KEY_RIGHT_SHIFT)) {
-                    // Open your GUI here
-                    mc.setScreen(new ConfigScreen());
-                }
+            if (mc.screen == null && ClientModEvents.VINER_CONFIG_KEY_BINDING.isDown()) {
+                mc.setScreen(new ConfigScreen()); // Open GUI
             }
         }
     }
@@ -102,12 +94,11 @@ public class CommonModEvents {
         if (MiningUtils.isVineable(block) && targetBlockState.canHarvestBlock(level, pos, player)) {
             // Collect all connected blocks of the same type
             List<BlockPos> connectedBlocks = MiningUtils.collectConnectedBlocks(level, pos, targetBlockState,
-                    player.getDirection().getNormal(), isShapeVine);
+                    player.getDirection().getNormal(), Config.SHAPE_VINE.get());
 
             MiningUtils.mineBlocks(player, connectedBlocks);
             // Increase player exhaustion
-            double exhaustionPerBlock = EXHAUSTION_PER_BLOCK.get();
-            player.getFoodData().addExhaustion((float) (exhaustionPerBlock * connectedBlocks.size()));
+            player.getFoodData().addExhaustion((float) (VinerBlockRegistry.getExhaustionPerBlock() * connectedBlocks.size()));
 
         }
 
