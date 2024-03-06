@@ -34,16 +34,16 @@ public class ConfigScreen extends Screen {
         addApplyButton();
     }
 
+    // Dynamically calculate layout parameters to avoid overlap and adjust to screen scale
     private void calculateLayoutParameters() {
-        boxWidth = 150;
-        padding = 100;
+        boxWidth = Math.min(150, this.width / 4); // Ensure box width is not too large on smaller screens
+        padding = this.width / 5; // Dynamic padding based on screen width
 
         leftColumnX = padding;
-
         rightColumnX = this.width - boxWidth - padding;
 
         yStart = this.height / 4;
-        stepSize = 30; // Vertical space between each widget
+        stepSize = 30; // Adjust to fit more components
     }
 
     private void addConfigWidgets() {
@@ -118,8 +118,8 @@ public class ConfigScreen extends Screen {
 
     private void addApplyButton() {
         this.addRenderableWidget(Button.builder(Component.literal("Apply"), button -> applyConfigChanges())
-                .pos(this.width / 2 - 100, this.height - 30)
-                .width(200)
+                .pos(this.width / 2 - boxWidth / 2, this.height - 50)
+                .width(boxWidth)
                 .build());
     }
 
@@ -135,7 +135,7 @@ public class ConfigScreen extends Screen {
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics); // Renders the background
-        super.render(graphics, mouseX, mouseY, partialTicks); // Renders any children components
+        super.render(graphics, mouseX, mouseY, partialTicks); // Renders widgets
 
         // Centers the title text
         int titleWidth = this.font.width(this.title);

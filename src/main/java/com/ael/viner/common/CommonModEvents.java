@@ -4,8 +4,6 @@ import com.ael.viner.Viner;
 import com.ael.viner.client.ClientModEvents;
 import com.ael.viner.config.Config;
 import com.ael.viner.gui.ConfigScreen;
-import com.ael.viner.network.VinerPacketHandler;
-import com.ael.viner.network.packets.MouseScrollPacket;
 import com.ael.viner.registry.VinerBlockRegistry;
 import com.ael.viner.util.MiningUtils;
 import com.mojang.logging.LogUtils;
@@ -61,8 +59,10 @@ public class CommonModEvents {
 
         double scrollDelta = event.getScrollDelta();
         if (scrollDelta != 0 && VINE_KEY_BINDING.isDown()) {
-            VinerPacketHandler.INSTANCE.sendToServer(new MouseScrollPacket(scrollDelta));
-            event.setCanceled(true);
+            //VinerPacketHandler.INSTANCE.sendToServer(new MouseScrollPacket(scrollDelta));
+            //event.setCanceled(true);
+
+            // not used anymore
         }
     }
 

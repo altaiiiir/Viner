@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
@@ -19,41 +20,86 @@ public class BlockListScreen extends Screen {
     private final Screen parent;
     private final List<? extends String> blockList;
     private final Consumer<List<String>> configUpdater;
+    private EditBox blockTagInputField;
     private int maxWidth = 0;
 
     public BlockListScreen(Screen parent, String screenTitle, List<? extends String> blockList, Consumer<List<String>> configUpdater) {
         super(Component.literal(screenTitle));
         this.parent = parent;
         this.blockList = blockList;
-        this.configUpdater = configUpdater; // Store the consumer that will update the configuration
+        this.configUpdater = configUpdater;
     }
 
     @Override
     protected void init() {
         super.init();
-        addBackButton();
+        setupUIElements();
+    }
+
+    // Setup UI elements like the input field and buttons
+    private void setupUIElements() {
+        setupInputField();
+        setupControlButtons();
         addRemoveButtons();
     }
 
-    private void addBackButton() {
-        this.addRenderableWidget(Button.builder(Component.literal("Back"), button -> {
-                    Minecraft.getInstance().setScreen(parent);
-                })
-                .pos(this.width / 2 - 100, this.height - 30)
-                .width(200)
-                .build());
+    // Initialize and add the input field for block/tag names
+    private void setupInputField() {
+        int fieldWidth = 200; // Width of the input field
+        int fieldX = this.width / 2 - fieldWidth / 2; // Center the input field horizontally
+        int fieldY = this.height - 70; // Position the input field towards the bottom
+
+        this.blockTagInputField = new EditBox(this.font, fieldX, fieldY, fieldWidth, 20, Component.literal(""));
+        this.blockTagInputField.setMaxLength(50);
+        this.addRenderableWidget(blockTagInputField);
     }
 
-    private void addRemoveButtons() {
-        maxWidth = blockList.stream().mapToInt(block -> this.font.width(block)).max().orElse(0);
-        int yStart = 40;
-        int boxHeight = this.font.lineHeight + 3 * 2;
-        int uniformBoxWidth = maxWidth + 8;
+    // Setup control buttons (Back and Add)
+    private void setupControlButtons() {
+        int fieldWidth = 200;
+        int fieldX = this.width / 2 - fieldWidth / 2;
+        int buttonY = this.blockTagInputField.getY() + 25; // Position buttons directly below the input field
 
+        // Back button
+        this.addRenderableWidget(Button.builder(Component.literal("Back"), button -> Minecraft.getInstance().setScreen(parent))
+                .pos(fieldX, buttonY).width(fieldWidth / 2 - 2).build());
+
+        // Add button
+        this.addRenderableWidget(Button.builder(Component.literal("Add"), button -> {
+            String input = blockTagInputField.getValue();
+            if (validateInput(input)) {
+                List<String> tempList = new ArrayList<>(blockList);
+                tempList.add(input);
+                applyConfigChanges(tempList);
+                blockTagInputField.setValue(""); // Clear the input field after adding
+            } else {
+                LOGGER.error("Invalid block/tag format: {}", input);
+            }
+        }).pos(fieldX + fieldWidth / 2 + 2, buttonY).width(fieldWidth / 2 - 2).build());
+    }
+
+    // Validate the input against the expected pattern
+    private boolean validateInput(String input) {
+        return input.matches("^#?[a-z_]+:[a-z_]+$");
+    }
+
+    // Add buttons for removing blocks/tags from the list
+    private void addRemoveButtons() {
+        calculateMaxWidth();
+        setupRemoveButtonForEachBlock();
+    }
+
+    // Calculate the maximum width among all blocks/tags to align remove buttons properly
+    private void calculateMaxWidth() {
+        maxWidth = blockList.stream().mapToInt(block -> this.font.width(block)).max().orElse(0);
+    }
+
+    // Setup a remove button next to each block/tag
+    private void setupRemoveButtonForEachBlock() {
+        int yStart = 40; // Starting position for the first block/tag
         for (int i = 0; i < blockList.size(); i++) {
             final int index = i;
-            int buttonX = (this.width / 2) + (uniformBoxWidth / 2) + 4;
-
+            int buttonX = (this.width / 2) + (maxWidth + 8) / 2 + 4;
             this.addRenderableWidget(Button.builder(Component.literal("X"), button -> {
                         List<String> tempList = new ArrayList<>(blockList);
                         tempList.remove(index);
@@ -62,46 +108,38 @@ public class BlockListScreen extends Screen {
                     .pos(buttonX, yStart)
                     .width(20)
                     .build());
-            yStart += boxHeight + 2;
+            yStart += this.font.lineHeight + 10; // Move down for the next block/tag
         }
     }
 
+    // Apply configuration changes and refresh the screen
     private void applyConfigChanges(List<String> updatedList) {
         try {
-            configUpdater.accept(updatedList); // Use the provided consumer to update the config
+            configUpdater.accept(updatedList);
             VinerBlockRegistry.setup();
-
-            // Reload the screen with the updated list
             Minecraft.getInstance().setScreen(new BlockListScreen(parent, this.title.getString(), updatedList, configUpdater));
-        } catch (Exception e) { // Catch a more generic exception if the error might not always be a NumberFormatException
+        } catch (Exception e) {
             LOGGER.error("Error applying config changes: {}", e.getMessage());
         }
     }
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics); // Renders the background
-        super.render(graphics, mouseX, mouseY, partialTicks); // Renders any children components
+        this.renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTicks); // Renders any children components like buttons and input fields
 
-        int boxPadding = 4;
-        int uniformBoxWidth = maxWidth + (boxPadding * 2); // Width based on the largest text
+        // Render each block/tag with its remove button
+        renderBlocksAndTags(graphics);
+    }
 
-        int titleWidth = this.font.width(this.title);
-        graphics.drawString(this.font, this.title, (this.width - titleWidth) / 2, 15, 0xFFFFFF);
-
+    // Render blocks/tags and their respective remove buttons
+    private void renderBlocksAndTags(@NotNull GuiGraphics graphics) {
         int yStart = 40;
         for (String block : blockList) {
-            int textWidth = this.font.width(block);
-            int boxHeight = this.font.lineHeight + (boxPadding * 2);
-            int boxX = (this.width / 2) - (uniformBoxWidth / 2); // Center the box
-
-            // Draw the box
-            graphics.fill(boxX, yStart, boxX + uniformBoxWidth, yStart + boxHeight, 0xFF555555);
-
-            // Align text to the left inside the box
-            graphics.drawString(this.font, block, boxX + boxPadding, yStart + boxPadding, 0xFFFFFF);
-
-            yStart += boxHeight + 2; // Increment for the next item, with a small gap
+            int boxX = (this.width / 2) - (maxWidth + 8) / 2; // Center the box horizontally
+            graphics.fill(boxX, yStart, boxX + maxWidth + 8, yStart + this.font.lineHeight + 8, 0xFF555555);
+            graphics.drawString(this.font, block, boxX + 4, yStart + 4, 0xFFFFFF); // Align text to the left inside the box
+            yStart += this.font.lineHeight + 10; // Move down for the next block/tag
         }
     }
 
