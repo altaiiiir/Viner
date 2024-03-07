@@ -11,12 +11,18 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class BlockListScreen extends Screen {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private final String minecraftTagsLink = "https://mcreator.net/wiki/minecraft-block-and-item-list-registry-and-code-names";
+    private int linkX, linkY, linkWidth, linkHeight;
     private final Screen parent;
     private final List<? extends String> blockList;
     private final Consumer<List<String>> configUpdater;
@@ -125,16 +131,43 @@ public class BlockListScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics);
+        this.renderBackground(graphics); // Renders the background
         super.render(graphics, mouseX, mouseY, partialTicks); // Renders any children components like buttons and input fields
 
+        int yStart = 40;
+
+        // Add instructional text above the input field
+        renderInstructionalText(graphics, yStart);
+
+        yStart+=5;
+
         // Render each block/tag with its remove button
-        renderBlocksAndTags(graphics);
+        renderBlocksAndTags(graphics, yStart);
     }
 
+    private void copyToClipboard(String text) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable transferable = new StringSelection(text);
+        clipboard.setContents(transferable, null);
+    }
+
+    private void renderInstructionalText(@NotNull GuiGraphics graphics, int yStart) {
+        String instructionalText = "Enter block names or tags here, for example:";
+
+        int textY = yStart - 30;
+        graphics.drawString(this.font, Component.literal(instructionalText), this.width / 2 - this.font.width(instructionalText) / 2, textY, 0xFFFFFF);
+
+        linkX = this.width / 2 - this.font.width(minecraftTagsLink) / 2;
+        linkY = textY + 10;
+        linkWidth = this.font.width(minecraftTagsLink);
+        linkHeight = this.font.lineHeight;
+
+        graphics.drawString(this.font, Component.literal(minecraftTagsLink), linkX, linkY, 0x55FF55);
+    }
+
+
     // Render blocks/tags and their respective remove buttons
-    private void renderBlocksAndTags(@NotNull GuiGraphics graphics) {
-        int yStart = 40;
+    private void renderBlocksAndTags(@NotNull GuiGraphics graphics, int yStart) {
         for (String block : blockList) {
             int boxX = (this.width / 2) - (maxWidth + 8) / 2; // Center the box horizontally
             graphics.fill(boxX, yStart, boxX + maxWidth + 8, yStart + this.font.lineHeight + 8, 0xFF555555);
