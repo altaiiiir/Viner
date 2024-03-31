@@ -1,5 +1,6 @@
 package com.ael.viner.util;
 
+import com.ael.viner.Viner;
 import com.ael.viner.config.Config;
 import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
@@ -14,6 +15,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -197,7 +199,7 @@ public class MiningUtils {
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(pos);
 
-        while (!queue.isEmpty() && connectedBlocks.size() < VinerBlockRegistry.getVeinableLimit()) {
+        while (!queue.isEmpty() && connectedBlocks.size() < VinerBlockRegistry.getVineableLimit()) {
             BlockPos currentPos = queue.poll();
 
             if (visited.contains(currentPos) || !targetState.getBlock().equals(level.getBlockState(currentPos).getBlock())) {
@@ -248,7 +250,7 @@ public class MiningUtils {
         Vec3i horizontalDirection = new Vec3i(lookPos.getZ(), 0, -lookPos.getX());
         int blockVolumeToMine = (heightAbove + heightBelow + 1) * (widthLeft + widthRight + 1);
 
-        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= VinerBlockRegistry.getVeinableLimit()) {
+        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= VinerBlockRegistry.getVineableLimit()) {
             BlockPos currentPos = queue.poll();
             Set<BlockPos> potentialBlocks = new HashSet<>();
 
@@ -288,8 +290,8 @@ public class MiningUtils {
      * @param block The block to be checked.
      * @return true if the block is vineable, false otherwise.
      */
-    public static boolean isVineable(Block block) {
-        return VinerBlockRegistry.isVineAll() || (!blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block)));
+    public static boolean isVineable(Block block, Player player) {
+        return  Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && (blockExistsInTags(block, player) || blockExistsInVineableBlocks(block, player)));
     }
 
 
@@ -299,8 +301,8 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is unvineable, false otherwise.
      */
-    private static boolean blockExistsInUnvineableBlocks(Block block) {
-        return VinerBlockRegistry.getUnvineableBlocks().contains(block);
+    private static boolean blockExistsInUnvineableBlocks(Block block, Player player) {
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block);
     }
 
     /**
@@ -309,8 +311,8 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable, false otherwise.
      */
-    private static boolean blockExistsInVineableBlocks(Block block) {
-        return VinerBlockRegistry.getVineableBlocks().contains(block);
+    private static boolean blockExistsInVineableBlocks(Block block, Player player) {
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block);
     }
 
     /**
@@ -319,9 +321,9 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable under any tag, false otherwise.
      */
-    private static boolean blockExistsInTags(Block block) {
+    private static boolean blockExistsInTags(Block block, Player player) {
         // Iterating through each tag to check if the block is vineable under any tag
-        List<TagKey<Block>> tags = VinerBlockRegistry.getVineableTags();
+        List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableTags();
         for (var tagKey : tags) {
             if (tagContainsBlock(tagKey, block)) {
                 return true;

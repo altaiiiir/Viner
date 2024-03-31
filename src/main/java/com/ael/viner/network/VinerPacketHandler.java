@@ -1,6 +1,7 @@
 package com.ael.viner.network;
 
 import com.ael.viner.Viner;
+import com.ael.viner.network.packets.ConfigSyncPacket;
 import com.ael.viner.network.packets.MouseScrollPacket;
 import com.ael.viner.network.packets.VeinMiningPacket;
 import com.ael.viner.network.packets.VinerKeyPressedPacket;
@@ -45,6 +46,10 @@ public class VinerPacketHandler {
 
         INSTANCE.registerMessage(id++, MouseScrollPacket.class, MouseScrollPacket::encode,
                 buf -> MouseScrollPacket.decode(buf, MouseScrollPacket.FACTORY),
+                (packet, ctx) -> packet.handle(packet, ctx));
+
+        INSTANCE.registerMessage(id++, ConfigSyncPacket.class, ConfigSyncPacket::encode,
+                buf -> ConfigSyncPacket.decode(buf, ConfigSyncPacket.FACTORY),
                 (packet, ctx) -> packet.handle(packet, ctx));
 
     }

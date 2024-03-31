@@ -1,6 +1,7 @@
 package com.ael.viner.gui;
 
 import com.ael.viner.config.Config;
+import com.ael.viner.network.packets.ConfigSyncPacket;
 import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
+import static com.ael.viner.network.packets.ConfigSyncPacket.syncConfigWithServer;
 
 @OnlyIn(Dist.CLIENT)
 public class ConfigScreen extends Screen {
@@ -71,13 +72,19 @@ public class ConfigScreen extends Screen {
     }
 
     private void addRedirectButtons() {
-        Screen vineableBlockListScreen = new BlockListScreen(this, "Vineable Block List", Config.VINEABLE_BLOCKS.get(), updatedList -> Config.VINEABLE_BLOCKS.set(new ArrayList<>(updatedList)));
+        Screen vineableBlockListScreen = new BlockListScreen(this, "Vineable Block List", Config.VINEABLE_BLOCKS.get(), updatedList -> {
+            Config.VINEABLE_BLOCKS.set(updatedList);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.BLOCK_LIST, updatedList, "vineableBlocks");
+        });
         vineableBlockListButton = GuiUtils.createRedirectButton(leftColumnX, yStart, boxWidth, 20, "Vineable Block List", vineableBlockListScreen);
         this.addRenderableWidget(vineableBlockListButton);
 
         yStart += stepSize; // increment starting point along the y-axis
 
-        Screen nonVineableBlockListScreen = new BlockListScreen(this, "Non-Vineable Block List", Config.UNVINEABLE_BLOCKS.get(), updatedList -> Config.UNVINEABLE_BLOCKS.set(new ArrayList<>(updatedList)));
+        Screen nonVineableBlockListScreen = new BlockListScreen(this, "Non-Vineable Block List", Config.UNVINEABLE_BLOCKS.get(), updatedList -> {
+            Config.UNVINEABLE_BLOCKS.set(updatedList);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.BLOCK_LIST, updatedList, "unvineableBlocks");
+        });
         nonVineableBlockListButton = GuiUtils.createRedirectButton(leftColumnX, yStart, boxWidth, 20, "Non-Vineable Block List", nonVineableBlockListScreen);
         this.addRenderableWidget(nonVineableBlockListButton);
     }
@@ -89,51 +96,79 @@ public class ConfigScreen extends Screen {
 
         vineAllButton = GuiUtils.createConfigBooleanButton(leftColumnX, yStart, boxWidth, 20, "Vine All", Config.VINE_ALL, newValue -> {
             Config.VINE_ALL.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.BOOLEAN, newValue, "vineAll");
             updateBlockListButtonState();
         });
         this.addRenderableWidget(vineAllButton);
 
         yStart += stepSize;
 
-        vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Vineable Limit", Config.VINEABLE_LIMIT, Config.VINEABLE_LIMIT::set);
+        vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Vineable Limit", Config.VINEABLE_LIMIT, newValue -> {
+            Config.VINEABLE_LIMIT.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "vineableLimit");
+        });
         this.addRenderableWidget(vineableLimitField);
 
         yStart += stepSize;
 
-        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Exhaustion Per Block", Config.EXHAUSTION_PER_BLOCK, Config.EXHAUSTION_PER_BLOCK::set);
+        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Exhaustion Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
+            Config.EXHAUSTION_PER_BLOCK.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.DOUBLE, newValue, "exhaustionPerBlock");
+        });
         this.addRenderableWidget(exhaustionPerBlockField);
     }
 
     private void addRightColumnWidgets() {
         shapeVineButton = GuiUtils.createConfigBooleanButton(rightColumnX, yStart, boxWidth, 20, "Shape Vine", Config.SHAPE_VINE, newValue -> {
             Config.SHAPE_VINE.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.BOOLEAN, newValue, "shapeVine");
             updateBlockListButtonState();
         });
         this.addRenderableWidget(shapeVineButton);
 
         yStart += stepSize;
 
-        heightBelowField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Below", Config.HEIGHT_BELOW, Config.HEIGHT_BELOW::set);
-        this.addRenderableWidget(heightBelowField);
-
-        yStart += stepSize;
-
-        heightAboveField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Above", Config.HEIGHT_ABOVE, Config.HEIGHT_ABOVE::set);
+        // Height Above Slider
+        heightAboveField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Above", Config.HEIGHT_ABOVE, newValue -> {
+            Config.HEIGHT_ABOVE.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "heightAbove");
+        });
         this.addRenderableWidget(heightAboveField);
 
         yStart += stepSize;
 
-        widthLeftField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Left", Config.WIDTH_LEFT, Config.WIDTH_LEFT::set);
+        // Height Below Slider
+        heightBelowField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Below", Config.HEIGHT_BELOW, newValue -> {
+            Config.HEIGHT_BELOW.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "heightBelow");
+        });
+        this.addRenderableWidget(heightBelowField);
+
+        yStart += stepSize;
+
+        // Width Left Slider
+        widthLeftField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Left", Config.WIDTH_LEFT, newValue -> {
+            Config.WIDTH_LEFT.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "widthLeft");
+        });
         this.addRenderableWidget(widthLeftField);
 
         yStart += stepSize;
 
-        widthRightField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Right", Config.WIDTH_RIGHT, Config.WIDTH_RIGHT::set);
+        // Width Right Slider
+        widthRightField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Right", Config.WIDTH_RIGHT, newValue -> {
+            Config.WIDTH_RIGHT.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "widthRight");
+        });
         this.addRenderableWidget(widthRightField);
 
         yStart += stepSize;
 
-        layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Layer Offset", Config.LAYER_OFFSET, Config.LAYER_OFFSET::set);
+        // Layer Offset Slider
+        layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Layer Offset", Config.LAYER_OFFSET, newValue -> {
+            Config.LAYER_OFFSET.set(newValue);
+            syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "layerOffset");
+        });
         this.addRenderableWidget(layerOffsetField);
     }
 

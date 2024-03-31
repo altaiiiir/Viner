@@ -165,11 +165,11 @@ public class Config {
                         "Minimum is 0 (no mining to the right), and there is no upper limit.")
                 .defineInRange("widthRight", 0, 0, Integer.MAX_VALUE);
 
-        // Define widthRight setting
+        // Define layerOffset setting
         LAYER_OFFSET = BUILDER
                 .comment("(Must have SHAPE_VINE enabled) The number of blocks defining the vertical distance between " +
                         "consecutive layers mined. Allows for staircase mining.")
-                .defineInRange("widthRight", 0, 0, Integer.MAX_VALUE);
+                .defineInRange("layerOffset", 0, 0, Integer.MAX_VALUE);
 
         // End the configuration category for viner settings
         BUILDER.pop();
