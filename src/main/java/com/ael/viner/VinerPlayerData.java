@@ -24,6 +24,7 @@ public class VinerPlayerData {
     private int widthLeft;
     private int widthRight;
     private int layerOffset;
+    private boolean isShapeVine;
 
     public VinerPlayerData(UUID playerId) {
         this.playerId = playerId;
@@ -43,6 +44,7 @@ public class VinerPlayerData {
         unvineableBlocks = VinerBlockRegistry.getUnvineableBlocks();
         vineableTags = VinerBlockRegistry.getVineableTags();
         unvineableTags = VinerBlockRegistry.getUnvineableTags();
+        isShapeVine = VinerBlockRegistry.isShapeVine();
     }
 
     public List<Block> getVineableBlocks() {
@@ -144,4 +146,7 @@ public class VinerPlayerData {
     public void setLayerOffset(int layerOffset) {
         this.layerOffset = layerOffset;
     }
+
+    public boolean isShapeVine() { return isShapeVine; }
+    public void setShapeVine(boolean isShapeVine) { this.isShapeVine = isShapeVine; }
 }

@@ -28,6 +28,7 @@ public class VinerBlockRegistry {
     private static int widthLeft;
     private static int widthRight;
     private static int layerOffset;
+    private static Boolean shapeVine;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     // Setup method to initialize Vineable blocks and tags
@@ -44,6 +45,7 @@ public class VinerBlockRegistry {
         widthLeft = initializeWidthLeft();
         widthRight = initializeWidthRight();
         layerOffset = initializeLayerOffset();
+        shapeVine = initializeShapeVine();
     }
 
     private static List<Block> initializeVineableBlocks() {
@@ -78,6 +80,7 @@ public class VinerBlockRegistry {
     private static int initializeLayerOffset() {
         return Config.LAYER_OFFSET.get();
     }
+    private static boolean initializeShapeVine() { return Config.SHAPE_VINE.get(); }
 
     public static List<Block> getVineableBlocks() {
         if (vineableBlocks == null) {
@@ -163,6 +166,13 @@ public class VinerBlockRegistry {
         return layerOffset;
     }
 
+    public static boolean isShapeVine() {
+        if (shapeVine == null) {
+            setup();
+        }
+        return shapeVine;
+    }
+
     public static List<Block> getBlocksFromConfigEntries(List<String> entries) {
         List<Block> blocks = new ArrayList<>();
         for (String entry : entries) {
@@ -191,6 +201,4 @@ public class VinerBlockRegistry {
     public static TagKey<Block> getTagKeyEntry(String entry) {
         return Objects.requireNonNull(ForgeRegistries.BLOCKS.tags()).createTagKey(getResourceLocationFromEntry(entry));
     }
-
-
 }

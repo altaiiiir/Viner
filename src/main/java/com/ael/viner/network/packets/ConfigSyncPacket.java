@@ -76,6 +76,8 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
             Viner.getInstance().getPlayerRegistry().setWidthRight(player, (Integer) msg.getData().value());
         } else if("layerOffset".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
             Viner.getInstance().getPlayerRegistry().setLayerOffset(player, (Integer) msg.getData().value());
+        } else if ("shapeVine".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BOOLEAN) {
+            Viner.getInstance().getPlayerRegistry().setShapeVine(player, (Boolean) msg.getData().value());
         } else if ("vineableBlocks".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BLOCK_LIST) {
             List<String> entries = (List<String>) msg.getData().value();
             List<Block> blocks = getBlocksFromConfigEntries(entries);

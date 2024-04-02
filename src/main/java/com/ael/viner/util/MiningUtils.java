@@ -1,8 +1,6 @@
 package com.ael.viner.util;
 
 import com.ael.viner.Viner;
-import com.ael.viner.config.Config;
-import com.ael.viner.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,8 +49,10 @@ public class MiningUtils {
         Level level = player.level();
         ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
 
+        var vineableLimit = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableLimit();
+
         // Check for client side, return early if true
-        if (level.isClientSide() || Config.VINEABLE_LIMIT.get() <= 0)
+        if (level.isClientSide() || vineableLimit <= 0)
             return;
 
         // Initial block position for spawning all drops
@@ -167,16 +167,16 @@ public class MiningUtils {
      * @return A list of BlockPos representing all connected blocks of the same type.
      */
     public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState,
-                                                        Vec3i lookPos, boolean isShapeVine) {
+                                                        Vec3i lookPos, int vineableLimit, boolean isShapeVine, int heightAbove,
+                                                        int heightBelow, int widthLeft, int widthRight, int layerOffset) {
         List<BlockPos> connectedBlocks = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
 
         if (isShapeVine) {
-            collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited,
-                    VinerBlockRegistry.getHeightAbove(), VinerBlockRegistry.getHeightBelow(),
-                    VinerBlockRegistry.getWidthLeft(), VinerBlockRegistry.getWidthRight(), VinerBlockRegistry.getLayerOffset());
+            collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited, vineableLimit,
+                    heightAbove, heightBelow, widthLeft, widthRight, layerOffset);
         } else {
-            collect(level, pos, targetState, connectedBlocks, visited);
+            collect(level, pos, targetState, connectedBlocks, visited, vineableLimit);
         }
 
         return connectedBlocks;
@@ -195,11 +195,11 @@ public class MiningUtils {
      * @param visited         A set to keep track of already visited positions, to avoid infinite recursion.
      */
 
-    private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited) {
+    private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int vineableLimit) {
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(pos);
 
-        while (!queue.isEmpty() && connectedBlocks.size() < VinerBlockRegistry.getVineableLimit()) {
+        while (!queue.isEmpty() && connectedBlocks.size() < vineableLimit) {
             BlockPos currentPos = queue.poll();
 
             if (visited.contains(currentPos) || !targetState.getBlock().equals(level.getBlockState(currentPos).getBlock())) {
@@ -243,14 +243,14 @@ public class MiningUtils {
      * @param widthLeft       Number of blocks to mine left of the starting block
      * @param widthRight      Number of blocks to mine right of the starting block
      */
-    private static void collectConfigurablePattern(Level level, Vec3i lookPos, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int heightAbove, int heightBelow, int widthLeft, int widthRight, int layerOffset) {
+    private static void collectConfigurablePattern(Level level, Vec3i lookPos, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int vineableLimit, int heightAbove, int heightBelow, int widthLeft, int widthRight, int layerOffset) {
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(pos);
 
         Vec3i horizontalDirection = new Vec3i(lookPos.getZ(), 0, -lookPos.getX());
         int blockVolumeToMine = (heightAbove + heightBelow + 1) * (widthLeft + widthRight + 1);
 
-        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= VinerBlockRegistry.getVineableLimit()) {
+        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= vineableLimit) {
             BlockPos currentPos = queue.poll();
             Set<BlockPos> potentialBlocks = new HashSet<>();
 

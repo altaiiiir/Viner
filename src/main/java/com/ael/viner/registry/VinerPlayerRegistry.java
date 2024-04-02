@@ -91,5 +91,10 @@ public class VinerPlayerRegistry {
         VinerPlayerData playerData = getPlayerData(player);
         playerData.setLayerOffset(layerOffset);
     }
+
+    public void setShapeVine(ServerPlayer player, Boolean shapeVine) {
+        VinerPlayerData playerData = getPlayerData(player);
+        playerData.setShapeVine(shapeVine);
+    }
 }
 
