@@ -68,13 +68,16 @@ public class VinerPlayerData {
     }
 
     public void setVineableTags(List<TagKey<Block>> vineableTags) {
-        this.vineableTags = new ArrayList<>(vineableTags);
+        this.vineableTags = vineableTags;
+    }
+
+    public List<TagKey<Block>> getUnvineableTags() {
+        return unvineableTags;
     }
 
     public void setUnvineableTags(List<TagKey<Block>> unvineableTags) {
-        this.unvineableTags = new ArrayList<>(unvineableTags);
+        this.unvineableTags = unvineableTags;
     }
-
     public boolean isVineKeyPressed() {
         return vineKeyPressed;
     }

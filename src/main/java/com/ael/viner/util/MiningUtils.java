@@ -291,7 +291,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     public static boolean isVineable(Block block, Player player) {
-        return  Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && (blockExistsInTags(block, player) || blockExistsInVineableBlocks(block, player)));
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
     }
 
 
@@ -302,7 +302,7 @@ public class MiningUtils {
      * @return true if the block is unvineable, false otherwise.
      */
     private static boolean blockExistsInUnvineableBlocks(Block block, Player player) {
-        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block);
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
     }
 
     /**
@@ -312,7 +312,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     private static boolean blockExistsInVineableBlocks(Block block, Player player) {
-        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block);
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
     }
 
     /**
@@ -321,9 +321,26 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable under any tag, false otherwise.
      */
-    private static boolean blockExistsInTags(Block block, Player player) {
+    private static boolean blockExistsInVineableTags(Block block, Player player) {
         // Iterating through each tag to check if the block is vineable under any tag
         List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableTags();
+        for (var tagKey : tags) {
+            if (tagContainsBlock(tagKey, block)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a specified block is listed as unvineable under any tag in the registry.
+     *
+     * @param block The block to check.
+     * @return true if the block is vineable under any tag, false otherwise.
+     */
+    private static boolean blockExistsInUnvineableTags(Block block, Player player) {
+        // Iterating through each tag to check if the block is vineable under any tag
+        List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableTags();
         for (var tagKey : tags) {
             if (tagContainsBlock(tagKey, block)) {
                 return true;
