@@ -103,7 +103,7 @@ public class ConfigScreen extends Screen {
 
         yStart += stepSize;
 
-        vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Vineable Limit", Config.VINEABLE_LIMIT, newValue -> {
+        vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 500, "Vineable Limit", Config.VINEABLE_LIMIT, newValue -> {
             Config.VINEABLE_LIMIT.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "vineableLimit");
         });
@@ -111,7 +111,7 @@ public class ConfigScreen extends Screen {
 
         yStart += stepSize;
 
-        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 100, "Exhaustion Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
+        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 20, "Hunger Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
             Config.EXHAUSTION_PER_BLOCK.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.DOUBLE, newValue, "exhaustionPerBlock");
         });
@@ -243,7 +243,7 @@ public class ConfigScreen extends Screen {
 
         // Layer Offset Field Tooltip
         if (layerOffsetField.isHoveredOrFocused()) {
-            graphics.renderTooltip(this.font, Component.literal("Adjusts the vertical offset for each vine layer."), mouseX, mouseY);
+            graphics.renderTooltip(this.font, Component.literal("Adjusts the vertical offset between each shape vined layer."), mouseX, mouseY);
         }
 
         // Vineable Limit Field Tooltip
@@ -253,7 +253,7 @@ public class ConfigScreen extends Screen {
 
         // Exhaustion Per Block Field Tooltip
         if (exhaustionPerBlockField.isHoveredOrFocused()) {
-            graphics.renderTooltip(this.font, Component.literal("Sets the exhaustion rate per vineable block."), mouseX, mouseY);
+            graphics.renderTooltip(this.font, Component.literal("Sets the hunger rate per vined block."), mouseX, mouseY);
         }
     }
 
