@@ -156,7 +156,7 @@ public class CommonModEvents {
 
         var playerConfig = Viner.getInstance().getPlayerRegistry().getPlayerData(player);
 
-        Boolean isShapeVine = playerConfig.isShapeVine();
+        boolean isShapeVine = playerConfig.isShapeVine();
         int vineableLimit = playerConfig.getVineableLimit();
         int heightAbove = playerConfig.getHeightAbove();
         int heightBelow = playerConfig.getHeightBelow();
@@ -174,7 +174,7 @@ public class CommonModEvents {
             MiningUtils.mineBlocks(player, connectedBlocks);
 
             // Increase player exhaustion
-            double exhaustionPerBlock = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getExhaustionPerBlock();
+            double exhaustionPerBlock = playerConfig.getExhaustionPerBlock();
             player.getFoodData().addExhaustion((float) (exhaustionPerBlock * connectedBlocks.size()));
 
         }

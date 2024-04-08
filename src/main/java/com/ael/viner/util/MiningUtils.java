@@ -20,6 +20,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
@@ -70,7 +71,8 @@ public class MiningUtils {
             spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
             spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
-            level.removeBlock(blockPos, false);
+            boolean isIceWithoutSilkTouch = level.getBlockState(blockPos).getBlock() == Blocks.ICE && tool.getEnchantmentLevel(Enchantments.SILK_TOUCH) == 0;
+            level.setBlockAndUpdate(blockPos, isIceWithoutSilkTouch ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState());
         }
     }
 
