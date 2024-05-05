@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static com.ael.viner.common.CommonModEvents.isShapeVine;
-
 public class MouseScrollPacket extends AbstractPacket<Double> {
     public static final PacketFactory<MouseScrollPacket> FACTORY = buf -> {
         double scrollDelta = buf.readDouble();
@@ -31,8 +29,10 @@ public class MouseScrollPacket extends AbstractPacket<Double> {
         if (Viner.getInstance().getPlayerRegistry()
                 .getPlayerData(Objects.requireNonNull(context.getSender()))
                 .isVineKeyPressed() && scrollDelta != 0) {
-            isShapeVine = !isShapeVine;
-            Component message = Component.literal(isShapeVine ? "Shape vine enabled" : "Shape vine disabled");
+
+            // Old Scroll Data Handling, might be useful in the future
+
+            Component message = Component.literal("Shape vine enabled");
             assert player != null;
             player.sendSystemMessage(message);
         }

@@ -1,6 +1,6 @@
 package com.ael.viner.util;
 
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.Viner;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,12 +13,14 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
@@ -48,8 +50,10 @@ public class MiningUtils {
         Level level = player.level();
         ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
 
+        var vineableLimit = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableLimit();
+
         // Check for client side, return early if true
-        if (level.isClientSide())
+        if (level.isClientSide() || vineableLimit <= 0)
             return;
 
         // Initial block position for spawning all drops
@@ -67,43 +71,8 @@ public class MiningUtils {
             spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
             spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
-            level.removeBlock(blockPos, false);
-        }
-    }
-
-    /**
-     * Protects inventories of blocks being mined by transferring their contents.
-     *
-     * @param level    The level where the block is located.
-     * @param blockPos The position of the block.
-     * @param player   The player performing the mining.
-     */
-    private static void protectStorage2(Level level, BlockPos blockPos, ServerPlayer player) {
-        BlockEntity blockEntity = level.getBlockEntity(blockPos);
-        if (blockEntity != null) {
-            blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-                NonNullList<ItemStack> inventoryContents = NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
-                for (int i = 0; i < itemHandler.getSlots(); i++) {
-                    inventoryContents.set(i, itemHandler.getStackInSlot(i).copy()); // Make a copy of the stack to avoid modifying the original
-                }
-
-                // Serialize the inventory into a new CompoundTag
-                CompoundTag inventoryTag = new CompoundTag();
-                ContainerHelper.saveAllItems(inventoryTag, inventoryContents, true);
-
-                // Attach the serialized inventory data to the dropped block ItemStack
-                CompoundTag blockEntityTag = new CompoundTag();
-                blockEntityTag.put("Items", inventoryTag.getList("Items", 10));
-
-                ItemStack droppedBlockStack = new ItemStack(blockEntity.getBlockState().getBlock());
-                droppedBlockStack.addTagElement("BlockEntityTag", blockEntityTag);
-
-                // Drop the item in the world
-                double x = blockPos.getX() + 0.5;
-                double y = blockPos.getY() + 0.5;
-                double z = blockPos.getZ() + 0.5;
-                ItemEntity droppedItem = new ItemEntity(level, x, y, z, droppedBlockStack);
-            });
+            boolean isIceWithoutSilkTouch = level.getBlockState(blockPos).getBlock() == Blocks.ICE && tool.getEnchantmentLevel(Enchantments.SILK_TOUCH) == 0;
+            level.setBlockAndUpdate(blockPos, isIceWithoutSilkTouch ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState());
         }
     }
 
@@ -200,16 +169,16 @@ public class MiningUtils {
      * @return A list of BlockPos representing all connected blocks of the same type.
      */
     public static List<BlockPos> collectConnectedBlocks(Level level, BlockPos pos, BlockState targetState,
-                                                        Vec3i lookPos, boolean isShapeVine) {
+                                                        Vec3i lookPos, int vineableLimit, boolean isShapeVine, int heightAbove,
+                                                        int heightBelow, int widthLeft, int widthRight, int layerOffset) {
         List<BlockPos> connectedBlocks = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
 
         if (isShapeVine) {
-            collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited,
-                    VinerBlockRegistry.getHeightAbove(), VinerBlockRegistry.getHeightBelow(),
-                    VinerBlockRegistry.getWidthLeft(), VinerBlockRegistry.getWidthRight(), 0);
+            collectConfigurablePattern(level, lookPos, pos, targetState, connectedBlocks, visited, vineableLimit,
+                    heightAbove, heightBelow, widthLeft, widthRight, layerOffset);
         } else {
-            collect(level, pos, targetState, connectedBlocks, visited);
+            collect(level, pos, targetState, connectedBlocks, visited, vineableLimit);
         }
 
         return connectedBlocks;
@@ -228,11 +197,11 @@ public class MiningUtils {
      * @param visited         A set to keep track of already visited positions, to avoid infinite recursion.
      */
 
-    private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited) {
+    private static void collect(Level level, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int vineableLimit) {
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(pos);
 
-        while (!queue.isEmpty() && connectedBlocks.size() < VinerBlockRegistry.getVeinableLimit()) {
+        while (!queue.isEmpty() && connectedBlocks.size() < vineableLimit) {
             BlockPos currentPos = queue.poll();
 
             if (visited.contains(currentPos) || !targetState.getBlock().equals(level.getBlockState(currentPos).getBlock())) {
@@ -276,14 +245,14 @@ public class MiningUtils {
      * @param widthLeft       Number of blocks to mine left of the starting block
      * @param widthRight      Number of blocks to mine right of the starting block
      */
-    private static void collectConfigurablePattern(Level level, Vec3i lookPos, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int heightAbove, int heightBelow, int widthLeft, int widthRight, int layerOffset) {
+    private static void collectConfigurablePattern(Level level, Vec3i lookPos, BlockPos pos, BlockState targetState, List<BlockPos> connectedBlocks, Set<BlockPos> visited, int vineableLimit, int heightAbove, int heightBelow, int widthLeft, int widthRight, int layerOffset) {
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(pos);
 
         Vec3i horizontalDirection = new Vec3i(lookPos.getZ(), 0, -lookPos.getX());
         int blockVolumeToMine = (heightAbove + heightBelow + 1) * (widthLeft + widthRight + 1);
 
-        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= VinerBlockRegistry.getVeinableLimit()) {
+        while (!queue.isEmpty() && connectedBlocks.size() + blockVolumeToMine <= vineableLimit) {
             BlockPos currentPos = queue.poll();
             Set<BlockPos> potentialBlocks = new HashSet<>();
 
@@ -323,8 +292,8 @@ public class MiningUtils {
      * @param block The block to be checked.
      * @return true if the block is vineable, false otherwise.
      */
-    public static boolean isVineable(Block block) {
-        return VinerBlockRegistry.isVineAll() || (!blockExistsInUnvineableBlocks(block) && (blockExistsInTags(block) || blockExistsInVineableBlocks(block)));
+    public static boolean isVineable(Block block, Player player) {
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
     }
 
 
@@ -334,8 +303,8 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is unvineable, false otherwise.
      */
-    private static boolean blockExistsInUnvineableBlocks(Block block) {
-        return VinerBlockRegistry.getUnvineableBlocks().contains(block);
+    private static boolean blockExistsInUnvineableBlocks(Block block, Player player) {
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
     }
 
     /**
@@ -344,8 +313,8 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable, false otherwise.
      */
-    private static boolean blockExistsInVineableBlocks(Block block) {
-        return VinerBlockRegistry.getVineableBlocks().contains(block);
+    private static boolean blockExistsInVineableBlocks(Block block, Player player) {
+        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
     }
 
     /**
@@ -354,9 +323,26 @@ public class MiningUtils {
      * @param block The block to check.
      * @return true if the block is vineable under any tag, false otherwise.
      */
-    private static boolean blockExistsInTags(Block block) {
+    private static boolean blockExistsInVineableTags(Block block, Player player) {
         // Iterating through each tag to check if the block is vineable under any tag
-        List<TagKey<Block>> tags = VinerBlockRegistry.getVineableTags();
+        List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableTags();
+        for (var tagKey : tags) {
+            if (tagContainsBlock(tagKey, block)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a specified block is listed as unvineable under any tag in the registry.
+     *
+     * @param block The block to check.
+     * @return true if the block is vineable under any tag, false otherwise.
+     */
+    private static boolean blockExistsInUnvineableTags(Block block, Player player) {
+        // Iterating through each tag to check if the block is vineable under any tag
+        List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableTags();
         for (var tagKey : tags) {
             if (tagContainsBlock(tagKey, block)) {
                 return true;

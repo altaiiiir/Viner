@@ -22,6 +22,7 @@ import static com.ael.viner.Viner.MOD_ID;
 @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientModEvents {
     public static KeyMapping VINE_KEY_BINDING;
+    public static KeyMapping VINER_CONFIG_KEY_BINDING;
     private static boolean vineKeyPressed = false;
 
     @SubscribeEvent
@@ -45,6 +46,12 @@ public class ClientModEvents {
             event.register(VINE_KEY_BINDING = new KeyMapping(
                     "key.vine",
                     GLFW.GLFW_KEY_LEFT_SHIFT,
+                    "key.categories.ael.viner"
+            ));
+
+            event.register(VINER_CONFIG_KEY_BINDING = new KeyMapping(
+                    "key.vine.config",
+                    GLFW.GLFW_KEY_RIGHT_SHIFT,
                     "key.categories.ael.viner"
             ));
         }
