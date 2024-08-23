@@ -160,7 +160,7 @@ public class VinerBlockRegistry {
     }
 
     public static int getLayerOffset() {
-        if (layerOffset < 0) {
+        if (layerOffset < -5) {
             setup();
         }
         return layerOffset;

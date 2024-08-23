@@ -145,12 +145,6 @@ public class BlockListScreen extends Screen {
         renderBlocksAndTags(graphics, yStart);
     }
 
-    private void copyToClipboard(String text) {
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Transferable transferable = new StringSelection(text);
-        clipboard.setContents(transferable, null);
-    }
-
     private void renderInstructionalText(@NotNull GuiGraphics graphics, int yStart) {
         String instructionalText = "Enter block names or tags here, for example:";
 
