@@ -169,7 +169,7 @@ public class Config {
         LAYER_OFFSET = BUILDER
                 .comment("(Must have SHAPE_VINE enabled) The number of blocks defining the vertical distance between " +
                         "consecutive layers mined. Allows for staircase mining.")
-                .defineInRange("layerOffset", 0, 0, Integer.MAX_VALUE);
+                .defineInRange("layerOffset", 0, -64, 256);
 
         // End the configuration category for viner settings
         BUILDER.pop();
