@@ -103,7 +103,7 @@ public class ConfigScreen extends Screen {
 
         yStart += stepSize;
 
-        vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 500, "Vineable Limit", Config.VINEABLE_LIMIT, newValue -> {
+        vineableLimitField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 0,500, "Vineable Limit", Config.VINEABLE_LIMIT, newValue -> {
             Config.VINEABLE_LIMIT.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "vineableLimit");
         });
@@ -111,7 +111,7 @@ public class ConfigScreen extends Screen {
 
         yStart += stepSize;
 
-        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 20, "Hunger Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
+        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20,20, "Hunger Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
             Config.EXHAUSTION_PER_BLOCK.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.DOUBLE, newValue, "exhaustionPerBlock");
         });
@@ -129,7 +129,7 @@ public class ConfigScreen extends Screen {
         yStart += stepSize;
 
         // Height Above Slider
-        heightAboveField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Above", Config.HEIGHT_ABOVE, newValue -> {
+        heightAboveField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 0,100, "Height Above", Config.HEIGHT_ABOVE, newValue -> {
             Config.HEIGHT_ABOVE.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "heightAbove");
         });
@@ -138,7 +138,7 @@ public class ConfigScreen extends Screen {
         yStart += stepSize;
 
         // Height Below Slider
-        heightBelowField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Height Below", Config.HEIGHT_BELOW, newValue -> {
+        heightBelowField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 0,100, "Height Below", Config.HEIGHT_BELOW, newValue -> {
             Config.HEIGHT_BELOW.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "heightBelow");
         });
@@ -147,7 +147,7 @@ public class ConfigScreen extends Screen {
         yStart += stepSize;
 
         // Width Left Slider
-        widthLeftField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Left", Config.WIDTH_LEFT, newValue -> {
+        widthLeftField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 0,100, "Width Left", Config.WIDTH_LEFT, newValue -> {
             Config.WIDTH_LEFT.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "widthLeft");
         });
@@ -156,7 +156,7 @@ public class ConfigScreen extends Screen {
         yStart += stepSize;
 
         // Width Right Slider
-        widthRightField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Width Right", Config.WIDTH_RIGHT, newValue -> {
+        widthRightField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 0,100, "Width Right", Config.WIDTH_RIGHT, newValue -> {
             Config.WIDTH_RIGHT.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "widthRight");
         });
@@ -165,7 +165,7 @@ public class ConfigScreen extends Screen {
         yStart += stepSize;
 
         // Layer Offset Slider
-        layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, 100, "Layer Offset", Config.LAYER_OFFSET, newValue -> {
+        layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, -64,256, "Layer Offset", Config.LAYER_OFFSET, newValue -> {
             Config.LAYER_OFFSET.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "layerOffset");
         });

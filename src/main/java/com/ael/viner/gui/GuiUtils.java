@@ -57,21 +57,21 @@ public class GuiUtils {
         };
     }
 
-    public static AbstractSliderButton createConfigSlider(int x, int y, int width, int height, int upperLimit, String label, Supplier<Integer> getter, Consumer<Integer> setter) {
+    public static AbstractSliderButton createConfigSlider(int x, int y, int width, int height, int lowerLimit, int upperLimit, String label, Supplier<Integer> getter, Consumer<Integer> setter) {
         return new AbstractSliderButton(x, y, width, height, Component.empty(), getter.get() / (double) upperLimit) {
             {
-                this.value = getter.get() / (double) upperLimit; // Normalize value (assuming 0-100 range for slider)
+                this.value = (getter.get() - lowerLimit) / (double) (upperLimit - lowerLimit); // Normalize value
                 updateMessage();
             }
 
             @Override
             protected void updateMessage() {
-                setMessage(Component.literal(label + ": " + (int) (this.value * upperLimit)));
+                setMessage(Component.literal(label + ": " + (int) (this.value * (upperLimit - lowerLimit) + lowerLimit)));
             }
 
             @Override
             protected void applyValue() {
-                setter.accept((int) (this.value * upperLimit)); // Apply value, denormalize it back
+                setter.accept((int) (this.value * (upperLimit - lowerLimit) + lowerLimit)); // Apply value, denormalize it back
             }
         };
     }
