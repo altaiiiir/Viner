@@ -111,7 +111,7 @@ public class ConfigScreen extends Screen {
 
         yStart += stepSize;
 
-        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20,20, "Hunger Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
+        exhaustionPerBlockField = GuiUtils.createConfigSlider(leftColumnX, yStart, boxWidth, 20, 20, "Hunger Per Block", Config.EXHAUSTION_PER_BLOCK, newValue -> {
             Config.EXHAUSTION_PER_BLOCK.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.DOUBLE, newValue, "exhaustionPerBlock");
         });
@@ -165,7 +165,7 @@ public class ConfigScreen extends Screen {
         yStart += stepSize;
 
         // Layer Offset Slider
-        layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, -64,256, "Layer Offset", Config.LAYER_OFFSET, newValue -> {
+        layerOffsetField = GuiUtils.createConfigSlider(rightColumnX, yStart, boxWidth, 20, -64, 256, "Layer Offset", Config.LAYER_OFFSET, newValue -> {
             Config.LAYER_OFFSET.set(newValue);
             syncConfigWithServer(ConfigSyncPacket.ConfigType.INT, newValue, "layerOffset");
         });
