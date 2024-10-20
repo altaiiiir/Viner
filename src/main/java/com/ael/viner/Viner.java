@@ -27,12 +27,12 @@ public class Viner {
      * Constructor for the Viner class.
      * This is where we register mod-specific functionality.
      */
-    public Viner() {
+    public Viner(FMLJavaModLoadingContext context) {
 
         instance = this;
         vinerPlayerRegistry = VinerPlayerRegistry.create();
 
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus modEventBus = context.getModEventBus();
 
         // Register the CommonSetup method for mod loading
         modEventBus.addListener(CommonSetup::setup);
@@ -44,7 +44,7 @@ public class Viner {
         VinerPacketHandler.register();
 
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     // I'm not a fan of using a singleton here, but not sure how else to handle this

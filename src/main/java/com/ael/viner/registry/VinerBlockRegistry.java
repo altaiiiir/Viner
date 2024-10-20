@@ -8,6 +8,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -177,7 +179,10 @@ public class VinerBlockRegistry {
         List<Block> blocks = new ArrayList<>();
         for (String entry : entries) {
             if (!entry.startsWith("#")) {
-                blocks.add(ForgeRegistries.BLOCKS.getValue(getResourceLocationFromEntry(entry)));
+                ResourceLocation resourceLocation = getResourceLocationFromEntry(entry);
+                if (resourceLocation != null) {
+                    blocks.add(ForgeRegistries.BLOCKS.getValue(resourceLocation));
+                }
             }
         }
         return blocks;
@@ -187,7 +192,7 @@ public class VinerBlockRegistry {
         List<TagKey<Block>> tags = new ArrayList<>();
         for (String entry : entries) {
             if (entry.startsWith("#")) {
-                tags.add(getTagKeyEntry(entry));
+                tags.add(getTagKeyEntry(entry.substring(1))); // Removing '#' before creating tag key
             }
         }
         return tags;
@@ -195,10 +200,20 @@ public class VinerBlockRegistry {
 
     public static ResourceLocation getResourceLocationFromEntry(String entry) {
         String[] splitName = entry.startsWith("#") ? entry.substring(1).split(":") : entry.split(":");
-        return new ResourceLocation(splitName[0], splitName[1]);
+
+        if (splitName.length == 2) {
+            return ResourceLocation.tryParse(splitName[0] + ":" + splitName[1]);
+        } else {
+            return null;
+        }
     }
 
     public static TagKey<Block> getTagKeyEntry(String entry) {
-        return Objects.requireNonNull(ForgeRegistries.BLOCKS.tags()).createTagKey(getResourceLocationFromEntry(entry));
+        ResourceLocation resourceLocation = getResourceLocationFromEntry(entry);
+        if (resourceLocation != null) {
+            return TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), resourceLocation);
+        }
+        return null;
     }
+
 }

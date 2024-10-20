@@ -4,10 +4,10 @@ import com.ael.viner.Viner;
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -16,32 +16,48 @@ public class MouseScrollPacket extends AbstractPacket<Double> {
         double scrollDelta = buf.readDouble();
         return new MouseScrollPacket(scrollDelta);
     };
-    private static final Logger LOGGER = LogUtils.getLogger();
 
     public MouseScrollPacket(Double data) {
         super(data);
     }
 
-    public static void processScrollEvent(Double data, NetworkEvent.@NotNull Context context) {
-        ServerPlayer player = context.getSender();
-        double scrollDelta = data;
+    public static void processScrollEvent(Double data, Object context) {
+        try {
+            // Use reflection to get the player (ServerPlayer) from the context
+            Method getSenderMethod = context.getClass().getMethod("getSender");
+            ServerPlayer player = (ServerPlayer) getSenderMethod.invoke(context);
+            double scrollDelta = data;
 
-        if (Viner.getInstance().getPlayerRegistry()
-                .getPlayerData(Objects.requireNonNull(context.getSender()))
-                .isVineKeyPressed() && scrollDelta != 0) {
+            if (Viner.getInstance().getPlayerRegistry()
+                    .getPlayerData(Objects.requireNonNull(player))
+                    .isVineKeyPressed() && scrollDelta != 0) {
 
-            // Old Scroll Data Handling, might be useful in the future
-
-            Component message = Component.literal("Shape vine enabled");
-            assert player != null;
-            player.sendSystemMessage(message);
+                // Old Scroll Data Handling, might be useful in the future
+                Component message = Component.literal("Shape vine enabled");
+                player.sendSystemMessage(message);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void handle(AbstractPacket<Double> msg, @NotNull Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> processScrollEvent(msg.getData(), ctx.get()));
-        ctx.get().setPacketHandled(true);
-    }
+    public void handle(AbstractPacket<Double> msg, @NotNull Supplier<Object> ctxSupplier) {
+        try {
+            Object context = ctxSupplier.get();
 
+            // Use reflection to access enqueueWork and setPacketHandled
+            Method enqueueWorkMethod = context.getClass().getMethod("enqueueWork", Runnable.class);
+            Method setPacketHandledMethod = context.getClass().getMethod("setPacketHandled", boolean.class);
+
+            // Schedule the work to be done on the network thread
+            enqueueWorkMethod.invoke(context, (Runnable) () -> processScrollEvent(msg.getData(), context));
+
+            // Mark the packet as handled
+            setPacketHandledMethod.invoke(context, true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

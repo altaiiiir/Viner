@@ -2,11 +2,13 @@ package com.ael.viner.util;
 
 import com.ael.viner.Viner;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Vec3i;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
+
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -16,6 +18,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -30,6 +33,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class MiningUtils {
@@ -43,7 +49,7 @@ public class MiningUtils {
      * @param player       The player who is mining the blocks.
      * @param blocksToMine A list of BlockPos representing the blocks to be mined.
      */
-    public static void mineBlocks(ServerPlayer player, List<BlockPos> blocksToMine) {
+    public static void mineBlocks(ServerPlayer player, List<BlockPos> blocksToMine) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         if (player == null)
             return;
 
@@ -71,7 +77,43 @@ public class MiningUtils {
             spawnBlockDrops(player, (ServerLevel) level, blockPos, tool, firstBlockPos);
             spawnExp(level.getBlockState(blockPos), (ServerLevel) level, firstBlockPos, tool);
 
-            boolean isIceWithoutSilkTouch = level.getBlockState(blockPos).getBlock() == Blocks.ICE && tool.getEnchantmentLevel(Enchantments.SILK_TOUCH) == 0;
+            int silkTouchLevel = 0;
+
+            try {
+                // For Minecraft 1.21.x or newer (using BuiltInRegistries)
+                Class<?> builtInRegistriesClass = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+                Object enchantmentRegistry = builtInRegistriesClass.getField("ENCHANTMENT").get(null);  // Fetch the ENCHANTMENT registry
+
+                // Create ResourceLocation using reflection for 1.21.x
+                Class<?> resourceLocationClass = Class.forName("net.minecraft.resources.ResourceLocation");
+                Constructor<?> resourceLocationConstructor = resourceLocationClass.getDeclaredConstructor(String.class, String.class);
+                resourceLocationConstructor.setAccessible(true);
+                Object silkTouchResourceLocation = resourceLocationConstructor.newInstance("minecraft", "silk_touch");
+
+                // Create the ResourceKey for the Enchantment registry
+                Class<?> resourceKeyClass = Class.forName("net.minecraft.resources.ResourceKey");
+                Method createMethod = resourceKeyClass.getMethod("create", Class.forName("net.minecraft.resources.ResourceKey"), resourceLocationClass);
+
+                // Get the ResourceKey for Registry.ENCHANTMENT
+                Object enchantmentRegistryKey = builtInRegistriesClass.getField("ENCHANTMENT").get(null);
+
+                // Create the ResourceKey for silk_touch enchantment
+                Object silkTouchKey = createMethod.invoke(null, enchantmentRegistryKey, silkTouchResourceLocation);
+
+                // Use the new getHolderOrThrow method to retrieve the Holder<Enchantment>
+                Method getHolderOrThrowMethod = enchantmentRegistry.getClass().getMethod("getHolderOrThrow", resourceKeyClass);
+                Holder<Enchantment> silkTouchHolder = (Holder<Enchantment>) getHolderOrThrowMethod.invoke(enchantmentRegistry, silkTouchKey);
+
+                // Use the new getItemEnchantmentLevel method for Holder<Enchantment>
+                silkTouchLevel = EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder, tool);
+
+            } catch (Exception e) {
+                // Fallback for 1.20.x
+                Method getEnchantmentLevelMethod = tool.getClass().getMethod("getEnchantmentLevel", Enchantment.class);
+                silkTouchLevel = (int) getEnchantmentLevelMethod.invoke(tool, Enchantments.SILK_TOUCH);
+            }
+
+            boolean isIceWithoutSilkTouch = level.getBlockState(blockPos).getBlock() == Blocks.ICE && silkTouchLevel == 0;
             level.setBlockAndUpdate(blockPos, isIceWithoutSilkTouch ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState());
         }
     }
@@ -85,11 +127,50 @@ public class MiningUtils {
                     inventoryContents.set(i, itemHandler.getStackInSlot(i).copy()); // Make a copy of the stack to avoid modifying the original
                 }
 
-                // Serialize the inventory into the BlockEntity's custom persistent data
+                // Serialize the inventory into a new CompoundTag
                 CompoundTag inventoryTag = new CompoundTag();
-                ContainerHelper.saveAllItems(inventoryTag, inventoryContents, true);
-                CompoundTag persistentData = blockEntity.getPersistentData(); // Retrieve custom persistent data
-                persistentData.put("Items", inventoryTag.getList("Items", 10)); // Store inventory data
+
+                try {
+                    // Try handling 1.21.x
+                    Method saveAllItemsMethod = ContainerHelper.class.getMethod("saveAllItems", CompoundTag.class, NonNullList.class, boolean.class, Class.forName("net.minecraft.core.HolderLookup$Provider"));
+                    Object holderProvider = getHolderLookupProvider(level);  // Fetch the HolderLookup.Provider dynamically
+                    saveAllItemsMethod.invoke(null, inventoryTag, inventoryContents, true, holderProvider);
+
+                } catch (NoSuchMethodException e) {
+                    // Fallback to 1.20.x version
+                    try {
+                        Method saveAllItemsMethod = ContainerHelper.class.getMethod("saveAllItems", CompoundTag.class, NonNullList.class, boolean.class);
+                        saveAllItemsMethod.invoke(null, inventoryTag, inventoryContents, true);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                try {
+                    // Handle 1.21.x for BlockEntity
+                    Method saveWithFullMetadataMethod = blockEntity.getClass().getMethod("saveWithFullMetadata", Class.forName("net.minecraft.core.HolderLookup$Provider"));
+                    Object holderProvider = getHolderLookupProvider(level);  // Fetch the HolderLookup.Provider dynamically
+                    CompoundTag blockEntityTag = (CompoundTag) saveWithFullMetadataMethod.invoke(blockEntity, holderProvider);
+
+                    // Store the inventory data in custom persistent data
+                    CompoundTag persistentData = blockEntityTag.getCompound("ForgeData");
+                    persistentData.put("Items", inventoryTag.getList("Items", 10));
+
+                } catch (NoSuchMethodException e) {
+                    // Handle 1.20.x for BlockEntity
+                    try {
+                        Method saveMethod = blockEntity.getClass().getMethod("saveWithFullMetadata");
+                        CompoundTag blockEntityTag = (CompoundTag) saveMethod.invoke(blockEntity);
+                        CompoundTag persistentData = blockEntityTag.getCompound("ForgeData");
+                        persistentData.put("Items", inventoryTag.getList("Items", 10));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
 
                 // Ensure the BlockEntity knows it has changed
                 blockEntity.setChanged();
@@ -97,12 +178,89 @@ public class MiningUtils {
         }
     }
 
+    private static Object getHolderLookupProvider(Level level) {
+        try {
+            // Handle for server-side: ServerLevel to get RegistryAccess
+            if (level instanceof ServerLevel serverLevel) {
+                // Try accessing 'asLookup' dynamically for 1.21.x
+                Method asLookupMethod = serverLevel.registryAccess().getClass().getMethod("asLookup");
+                return asLookupMethod.invoke(serverLevel.registryAccess());
+            }
 
-    private static void spawnExp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
+            // Handle for client-side: Use Minecraft to get RegistryAccess
+            if (Minecraft.getInstance().level != null) {
+                Method asLookupMethod = Minecraft.getInstance().level.registryAccess().getClass().getMethod("asLookup");
+                return asLookupMethod.invoke(Minecraft.getInstance().level.registryAccess());
+            }
 
-        // Gets current tools enchantments
-        int fortuneLevel = tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
-        int silkTouchLevel = tool.getEnchantmentLevel(Enchantments.SILK_TOUCH);
+        } catch (NoSuchMethodException e) {
+            // If 'asLookup' does not exist (e.g., in 1.20.x), we fallback
+            try {
+                if (level instanceof ServerLevel serverLevel) {
+                    return serverLevel.registryAccess();  // Return RegistryAccess directly for 1.20.x
+                }
+                if (Minecraft.getInstance().level != null) {
+                    return Minecraft.getInstance().level.registryAccess();  // Return RegistryAccess directly for 1.20.x
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Return null if HolderLookup.Provider cannot be obtained
+        return null;
+    }
+
+    private static void spawnExp(BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+
+        int fortuneLevel = 0;
+        int silkTouchLevel = 0;
+
+        try {
+            // For Minecraft 1.21.x or newer (using BuiltInRegistries)
+            Class<?> builtInRegistriesClass = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+            Object enchantmentRegistry = builtInRegistriesClass.getField("ENCHANTMENT").get(null);  // Fetch the ENCHANTMENT registry
+
+            // Create ResourceLocation using reflection for 1.21.x
+            Class<?> resourceLocationClass = Class.forName("net.minecraft.resources.ResourceLocation");
+            Constructor<?> resourceLocationConstructor = resourceLocationClass.getDeclaredConstructor(String.class, String.class);
+            resourceLocationConstructor.setAccessible(true);
+
+            // Get ResourceKey for "block_fortune" and "silk_touch"
+            Object fortuneResourceLocation = resourceLocationConstructor.newInstance("minecraft", "fortune");
+            Object silkTouchResourceLocation = resourceLocationConstructor.newInstance("minecraft", "silk_touch");
+
+            // Create the ResourceKey for the Enchantment registry
+            Class<?> resourceKeyClass = Class.forName("net.minecraft.resources.ResourceKey");
+            Method createMethod = resourceKeyClass.getMethod("create", Class.forName("net.minecraft.resources.ResourceKey"), resourceLocationClass);
+
+            // Get the ResourceKey for Registry.ENCHANTMENT
+            Object enchantmentRegistryKey = builtInRegistriesClass.getField("ENCHANTMENT").get(null);
+
+            // Create the ResourceKey for fortune and silk_touch enchantments
+            Object fortuneKey = createMethod.invoke(null, enchantmentRegistryKey, fortuneResourceLocation);
+            Object silkTouchKey = createMethod.invoke(null, enchantmentRegistryKey, silkTouchResourceLocation);
+
+            // Use the new getHolderOrThrow method to retrieve the Holder<Enchantment> for both enchantments
+            Method getHolderOrThrowMethod = enchantmentRegistry.getClass().getMethod("getHolderOrThrow", resourceKeyClass);
+            Holder<Enchantment> fortuneHolder = (Holder<Enchantment>) getHolderOrThrowMethod.invoke(enchantmentRegistry, fortuneKey);
+            Holder<Enchantment> silkTouchHolder = (Holder<Enchantment>) getHolderOrThrowMethod.invoke(enchantmentRegistry, silkTouchKey);
+
+            // Use the new getItemEnchantmentLevel method for both enchantments
+            fortuneLevel = EnchantmentHelper.getItemEnchantmentLevel(fortuneHolder, tool);
+            silkTouchLevel = EnchantmentHelper.getItemEnchantmentLevel(silkTouchHolder, tool);
+
+        } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException e) {
+            // Fallback for Minecraft 1.20.x
+            Method getFortuneLevelMethod = tool.getClass().getMethod("getFortuneLevel", Enchantment.class);
+            fortuneLevel = (int) getFortuneLevelMethod.invoke(tool, Enchantments.FORTUNE);
+            Method getEnchantmentLevelMethod = tool.getClass().getMethod("getEnchantmentLevel", Enchantment.class);
+            silkTouchLevel = (int) getEnchantmentLevelMethod.invoke(tool, Enchantments.SILK_TOUCH);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // Gets the XP expected to drop from a block
         int exp = blockState.getExpDrop(level, level.random, blockPos, fortuneLevel, silkTouchLevel);
@@ -112,6 +270,7 @@ public class MiningUtils {
             blockState.getBlock().popExperience(level, blockPos, exp);
         }
     }
+
 
     /**
      * Spawns block drops for the block at the specified position, applying special handling for Skulker Boxes
@@ -128,22 +287,59 @@ public class MiningUtils {
         BlockEntity blockEntity = level.getBlockEntity(blockPos);
         CompoundTag blockEntityTag = null;
 
-        // Check if the BlockEntity is an instance of SkulkerBoxBlockEntity
         if (blockEntity instanceof ShulkerBoxBlockEntity) {
-            // Save the block entity data, excluding metadata, to a new CompoundTag
-            blockEntityTag = blockEntity.saveWithoutMetadata();
+            try {
+                // Check if we're in 1.21.x (using reflection to see if saveWithoutMetadata requires HolderLookup.Provider)
+                Method saveWithoutMetadataMethod = blockEntity.getClass().getMethod("saveWithoutMetadata", HolderLookup.Provider.class);
+
+                // For 1.21.x, we need to get the HolderLookup.Provider
+                Method asLookupMethod = Objects.requireNonNull(blockEntity.getLevel()).registryAccess().getClass().getMethod("asLookup");
+                Object lookup = asLookupMethod.invoke(blockEntity.getLevel().registryAccess());
+
+                // Invoke the asProvider method on the lookup object to get HolderLookup.Provider
+                Method asProviderMethod = lookup.getClass().getMethod("asProvider");
+                Object holderProvider = asProviderMethod.invoke(lookup);
+
+                // Call saveWithoutMetadata with the HolderLookup.Provider
+                blockEntityTag = (CompoundTag) saveWithoutMetadataMethod.invoke(blockEntity, holderProvider);
+            } catch (NoSuchMethodException e) {
+                try {
+                    // Fall back to 1.20.x saveWithoutMetadata method without HolderLookup.Provider
+                    Method saveWithoutMetadataMethod = blockEntity.getClass().getMethod("saveWithoutMetadata");
+
+                    // Call the saveWithoutMetadata method for 1.20.x
+                    blockEntityTag = (CompoundTag) saveWithoutMetadataMethod.invoke(blockEntity);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
 
         // Use the block's loot table to determine the items to drop, considering the tool used and the player
         List<ItemStack> itemsToDrop = Block.getDrops(level.getBlockState(blockPos), level, blockPos, null, player, tool);
 
         // Iterate through the determined items to drop
         for (ItemStack item : itemsToDrop) {
-            // If we have saved BlockEntity data (from a Skulker Box) and the item is a Skulker Box, attach the data
+            // If we have saved BlockEntity data (from a Shulker Box) and the item is a Shulker Box, attach the data
             if (blockEntityTag != null && item.getItem() instanceof BlockItem && ((BlockItem) item.getItem()).getBlock() instanceof ShulkerBoxBlock) {
-                CompoundTag itemTag = item.getOrCreateTag();
-                itemTag.put("BlockEntityTag", blockEntityTag);
-                item.setTag(itemTag);
+                try {
+                    // Use reflection to access getOrCreateTag and setTag in 1.21.x and 1.20.x
+                    Method getOrCreateTagMethod = item.getClass().getMethod("getOrCreateTag");
+                    CompoundTag itemTag = (CompoundTag) getOrCreateTagMethod.invoke(item);
+
+                    itemTag.put("BlockEntityTag", blockEntityTag);
+
+                    Method setTagMethod = item.getClass().getMethod("setTag", CompoundTag.class);
+                    setTagMethod.invoke(item, itemTag);
+                } catch (NoSuchMethodException e) {
+                    // Handle potential cases where the methods might be renamed or unavailable
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             // Calculate random offset for drop position
@@ -370,9 +566,50 @@ public class MiningUtils {
      * @param tool The tool whose Unbreaking enchantment level is to be checked.
      * @return The level of the Unbreaking enchantment, or 0 if not present.
      */
-    public static int getUnbreakingLevel(ItemStack tool) {
-        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, tool);
+    public static int getUnbreakingLevel(ItemStack tool) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        int unbreakingLevel = 0;
+
+        try {
+            // For Minecraft 1.21.x or newer (using BuiltInRegistries)
+            Class<?> builtInRegistriesClass = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+            Object enchantmentRegistry = builtInRegistriesClass.getField("ENCHANTMENT").get(null);  // Fetch the ENCHANTMENT registry
+
+            // Create ResourceLocation using reflection for 1.21.x
+            Class<?> resourceLocationClass = Class.forName("net.minecraft.resources.ResourceLocation");
+            Constructor<?> resourceLocationConstructor = resourceLocationClass.getDeclaredConstructor(String.class, String.class);
+            resourceLocationConstructor.setAccessible(true);
+
+            // Get ResourceLocation for "unbreaking"
+            Object unbreakingResourceLocation = resourceLocationConstructor.newInstance("minecraft", "unbreaking");
+
+            // Create the ResourceKey for the Enchantment registry
+            Class<?> resourceKeyClass = Class.forName("net.minecraft.resources.ResourceKey");
+            Method createMethod = resourceKeyClass.getMethod("create", Class.forName("net.minecraft.resources.ResourceKey"), resourceLocationClass);
+
+            // Get the ResourceKey for Registry.ENCHANTMENT
+            Object enchantmentRegistryKey = builtInRegistriesClass.getField("ENCHANTMENT").get(null);
+
+            // Create the ResourceKey for unbreaking enchantment
+            Object unbreakingKey = createMethod.invoke(null, enchantmentRegistryKey, unbreakingResourceLocation);
+
+            // Use the new getHolderOrThrow method to retrieve the Holder<Enchantment> for unbreaking
+            Method getHolderOrThrowMethod = enchantmentRegistry.getClass().getMethod("getHolderOrThrow", resourceKeyClass);
+            Holder<Enchantment> unbreakingHolder = (Holder<Enchantment>) getHolderOrThrowMethod.invoke(enchantmentRegistry, unbreakingKey);
+
+            // Use the new getItemEnchantmentLevel method for unbreaking
+            unbreakingLevel = EnchantmentHelper.getItemEnchantmentLevel(unbreakingHolder, tool);
+
+        } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException e) {
+            // Fallback for Minecraft 1.20.x
+            Method getUnbreakingLevelMethod = tool.getClass().getMethod("getUnbreakingLevel", Enchantment.class);
+            unbreakingLevel = (int) getUnbreakingLevelMethod.invoke(tool, Enchantments.SILK_TOUCH);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return unbreakingLevel;
     }
+
 
     /**
      * Calculates the chance of a tool taking damage based on its Unbreaking enchantment level.
@@ -391,7 +628,7 @@ public class MiningUtils {
      * @param damage The amount of damage to apply.
      * @return A boolean containing whether the applyDamage function broke the weapon
      */
-    public static boolean applyDamage(@NotNull ItemStack tool, int damage) {
+    public static boolean applyDamage(@NotNull ItemStack tool, int damage) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         if (!tool.isDamageableItem())
             return false;
