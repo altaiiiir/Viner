@@ -1,6 +1,6 @@
 package com.ael.viner.network;
 
-import com.ael.viner.Viner;
+import com.ael.viner.forge.VinerForge;
 import com.ael.viner.network.packets.ConfigSyncPacket;
 import com.ael.viner.network.packets.MouseScrollPacket;
 import com.ael.viner.network.packets.VeinMiningPacket;
@@ -22,7 +22,7 @@ public class VinerPacketHandler {
      * Networking channel instance for sending and receiving packets.
      */
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(Viner.MOD_ID, "main"),
+            new ResourceLocation(VinerForge.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals

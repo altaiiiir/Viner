@@ -1,6 +1,6 @@
 package com.ael.viner.util;
 
-import com.ael.viner.Viner;
+import com.ael.viner.forge.VinerForge;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,7 +50,7 @@ public class MiningUtils {
         Level level = player.level();
         ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        var vineableLimit = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableLimit();
+        var vineableLimit = VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).getVineableLimit();
 
         // Check for client side, return early if true
         if (level.isClientSide() || vineableLimit <= 0)
@@ -293,7 +293,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     public static boolean isVineable(Block block, Player player) {
-        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
+        return VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
     }
 
 
@@ -304,7 +304,7 @@ public class MiningUtils {
      * @return true if the block is unvineable, false otherwise.
      */
     private static boolean blockExistsInUnvineableBlocks(Block block, Player player) {
-        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
+        return VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
     }
 
     /**
@@ -314,7 +314,7 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     private static boolean blockExistsInVineableBlocks(Block block, Player player) {
-        return Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
+        return VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
     }
 
     /**
@@ -325,7 +325,7 @@ public class MiningUtils {
      */
     private static boolean blockExistsInVineableTags(Block block, Player player) {
         // Iterating through each tag to check if the block is vineable under any tag
-        List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getVineableTags();
+        List<TagKey<Block>> tags = VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).getVineableTags();
         for (var tagKey : tags) {
             if (tagContainsBlock(tagKey, block)) {
                 return true;
@@ -342,7 +342,7 @@ public class MiningUtils {
      */
     private static boolean blockExistsInUnvineableTags(Block block, Player player) {
         // Iterating through each tag to check if the block is vineable under any tag
-        List<TagKey<Block>> tags = Viner.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableTags();
+        List<TagKey<Block>> tags = VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).getUnvineableTags();
         for (var tagKey : tags) {
             if (tagContainsBlock(tagKey, block)) {
                 return true;

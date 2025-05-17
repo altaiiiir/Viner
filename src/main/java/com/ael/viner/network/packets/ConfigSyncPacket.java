@@ -1,6 +1,6 @@
 package com.ael.viner.network.packets;
 
-import com.ael.viner.Viner;
+import com.ael.viner.forge.VinerForge;
 import com.ael.viner.network.VinerPacketHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
@@ -61,37 +61,37 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
         if (player == null) return; // for single player
 
         if ("vineAll".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BOOLEAN) {
-            Viner.getInstance().getPlayerRegistry().setVineAllEnabled(player, (Boolean) msg.getData().value());
+           VinerForge.getInstance().getPlayerRegistry().setVineAllEnabled(player, (Boolean) msg.getData().value());
         } else if("vineableLimit".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
-            Viner.getInstance().getPlayerRegistry().setVineableLimit(player, (Integer) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setVineableLimit(player, (Integer) msg.getData().value());
         } else if("exhaustionPerBlock".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.DOUBLE) {
-            Viner.getInstance().getPlayerRegistry().setExhaustionPerBlock(player, (Double) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setExhaustionPerBlock(player, (Double) msg.getData().value());
         } else if("heightAbove".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
-            Viner.getInstance().getPlayerRegistry().setHeightAbove(player, (Integer) msg.getData().value());
+           VinerForge.getInstance().getPlayerRegistry().setHeightAbove(player, (Integer) msg.getData().value());
         } else if("heightBelow".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
-            Viner.getInstance().getPlayerRegistry().setHeightBelow(player, (Integer) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setHeightBelow(player, (Integer) msg.getData().value());
         } else if("widthLeft".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
-            Viner.getInstance().getPlayerRegistry().setWidthLeft(player, (Integer) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setWidthLeft(player, (Integer) msg.getData().value());
         } else if("widthRight".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
-            Viner.getInstance().getPlayerRegistry().setWidthRight(player, (Integer) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setWidthRight(player, (Integer) msg.getData().value());
         } else if("layerOffset".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.INT) {
-            Viner.getInstance().getPlayerRegistry().setLayerOffset(player, (Integer) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setLayerOffset(player, (Integer) msg.getData().value());
         } else if ("shapeVine".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BOOLEAN) {
-            Viner.getInstance().getPlayerRegistry().setShapeVine(player, (Boolean) msg.getData().value());
+            VinerForge.getInstance().getPlayerRegistry().setShapeVine(player, (Boolean) msg.getData().value());
         } else if ("vineableBlocks".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BLOCK_LIST) {
             List<String> entries = (List<String>) msg.getData().value();
             List<Block> blocks = getBlocksFromConfigEntries(entries);
             List<TagKey<Block>> tags = getTagsFromConfigEntries(entries);
 
-            Viner.getInstance().getPlayerRegistry().setVineableBlocks(player, blocks);
-            Viner.getInstance().getPlayerRegistry().setVineableTags(player, tags);
+            VinerForge.getInstance().getPlayerRegistry().setVineableBlocks(player, blocks);
+            VinerForge.getInstance().getPlayerRegistry().setVineableTags(player, tags);
         } else if ("unvineableBlocks".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BLOCK_LIST) {
             List<String> entries = (List<String>) msg.getData().value();
             List<Block> blocks = getBlocksFromConfigEntries(entries);
             List<TagKey<Block>> tags = getTagsFromConfigEntries(entries);
 
-            Viner.getInstance().getPlayerRegistry().setUnvineableBlocks(player, blocks);
-            Viner.getInstance().getPlayerRegistry().setUnvineableTags(player, tags);
+            VinerForge.getInstance().getPlayerRegistry().setUnvineableBlocks(player, blocks);
+            VinerForge.getInstance().getPlayerRegistry().setUnvineableTags(player, tags);
         }
 
         ctx.get().setPacketHandled(true);

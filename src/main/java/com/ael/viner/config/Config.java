@@ -1,6 +1,6 @@
 package com.ael.viner.config;
 
-import com.ael.viner.Viner;
+import com.ael.viner.forge.VinerForge;
 import com.ael.viner.registry.VinerBlockRegistry;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Configuration class for the Viner mod, defining various settings and their default values.
  */
-@Mod.EventBusSubscriber(modid = Viner.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = VinerForge.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
 
     /**

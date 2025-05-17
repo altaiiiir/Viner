@@ -1,6 +1,6 @@
 package com.ael.viner.common;
 
-import com.ael.viner.Viner;
+import com.ael.viner.forge.VinerForge;
 import com.ael.viner.registry.VinerBlockRegistry;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -13,7 +13,7 @@ import java.util.Objects;
  * Handles configuration events for the Viner mod, ensuring the block registry is updated
  * when the mod configuration is reloaded.
  */
-@Mod.EventBusSubscriber(modid = Viner.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = VinerForge.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ConfigEventHandler {
 
     /**
@@ -26,7 +26,7 @@ public class ConfigEventHandler {
     public static void onModConfigEvent(final ModConfigEvent.Reloading event) {
         final ModConfig config = event.getConfig();
         // Check if the event is related to the Viner mod
-        if (Objects.equals(config.getModId(), Viner.MOD_ID)){
+        if (Objects.equals(config.getModId(), VinerForge.MOD_ID)){
             // Update the block registry to reflect the new configuration
             VinerBlockRegistry.setup();
         }
