@@ -1,6 +1,6 @@
 package com.ael.viner.event;
 
-import com.ael.viner.forge.VinerForge;
+import com.ael.viner.common.VinerEntrypoint;
 import com.ael.viner.util.MiningUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,7 +21,7 @@ public class BlockEventHandler {
     @SubscribeEvent
     public static void onBlockBroken(BlockEvent.BreakEvent event) {
         ServerPlayer player = (ServerPlayer) event.getPlayer();
-        if (!VinerForge.getInstance().getPlayerRegistry().getPlayerData(player).isVineKeyPressed()) {
+        if (!VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).isVineKeyPressed()) {
             return;
         }
         LevelAccessor levelAccessor = event.getLevel();
@@ -29,7 +29,7 @@ public class BlockEventHandler {
         BlockPos pos = event.getPos();
         BlockState targetBlockState = level.getBlockState(pos);
         Block block = targetBlockState.getBlock();
-        var playerConfig = VinerForge.getInstance().getPlayerRegistry().getPlayerData(player);
+        var playerConfig = VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player);
         boolean isShapeVine = playerConfig.isShapeVine();
         int vineableLimit = playerConfig.getVineableLimit();
         int heightAbove = playerConfig.getHeightAbove();

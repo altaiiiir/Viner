@@ -10,13 +10,15 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import com.ael.viner.common.IVinerMod;
+import com.ael.viner.common.VinerEntrypoint;
 
 /**
  * The main mod class for Viner mod (Forge-specific entrypoint).
  * This class is the entry point for all Forge-specific functionality.
  */
 @Mod(VinerForge.MOD_ID)  // The value here should match an entry in the META-INF/mods.toml file
-public class VinerForge {
+public class VinerForge implements IVinerMod {
 
     private static VinerForge instance;
     private final VinerPlayerRegistry vinerPlayerRegistry;
@@ -28,6 +30,7 @@ public class VinerForge {
      * This is where we register Forge-specific functionality.
      */
     public VinerForge() {
+        VinerEntrypoint.setInstance(this);
         instance = this;
         vinerPlayerRegistry = VinerPlayerRegistry.create();
 
@@ -51,6 +54,7 @@ public class VinerForge {
         return instance;
     }
 
+    @Override
     public VinerPlayerRegistry getPlayerRegistry(){
         return vinerPlayerRegistry;
     }

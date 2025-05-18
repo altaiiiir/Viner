@@ -1,6 +1,6 @@
 package com.ael.viner.network.packets;
 
-import com.ael.viner.forge.VinerForge;
+import com.ael.viner.common.VinerEntrypoint;
 import net.minecraftforge.network.NetworkEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +19,7 @@ public class VinerKeyPressedPacket extends AbstractPacket<Boolean> {
     @Override
     public void handle(AbstractPacket<Boolean> msg, @NotNull Supplier<NetworkEvent.Context> ctx) {
         NetworkEvent.Context context = ctx.get();
-        context.enqueueWork(() -> VinerForge.getInstance().getPlayerRegistry().setVineKeyPressed(context.getSender(), msg.getData()));
+        context.enqueueWork(() -> VinerEntrypoint.get().getPlayerRegistry().setVineKeyPressed(context.getSender(), msg.getData()));
     }
 
 }
