@@ -2,24 +2,23 @@ package com.ael.viner.forge.gui;
 
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 public class BlockListScreen extends Screen {
   private static final Logger LOGGER = LogUtils.getLogger();
   private final String minecraftTagsLink =
       "https://mcreator.net/wiki/minecraft-block-and-item-list-registry-and-code-names";
-  private int linkX, linkY, linkWidth, linkHeight;
+  private int linkX, linkY;
   private final Screen parent;
   private final List<? extends String> blockList;
   private final Consumer<List<String>> configUpdater;
@@ -148,7 +147,7 @@ public class BlockListScreen extends Screen {
   }
 
   @Override
-  public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
     this.renderBackground(graphics); // Renders the background
     super.render(
         graphics,
@@ -167,7 +166,7 @@ public class BlockListScreen extends Screen {
     renderBlocksAndTags(graphics, yStart);
   }
 
-  private void renderInstructionalText(@NotNull GuiGraphics graphics, int yStart) {
+  private void renderInstructionalText(@Nonnull GuiGraphics graphics, int yStart) {
     String instructionalText = "Enter block names or tags here, for example:";
 
     int textY = yStart - 30;
@@ -180,14 +179,12 @@ public class BlockListScreen extends Screen {
 
     linkX = this.width / 2 - this.font.width(minecraftTagsLink) / 2;
     linkY = textY + 10;
-    linkWidth = this.font.width(minecraftTagsLink);
-    linkHeight = this.font.lineHeight;
 
     graphics.drawString(this.font, Component.literal(minecraftTagsLink), linkX, linkY, 0x55FF55);
   }
 
   // Render blocks/tags and their respective remove buttons
-  private void renderBlocksAndTags(@NotNull GuiGraphics graphics, int yStart) {
+  private void renderBlocksAndTags(@Nonnull GuiGraphics graphics, int yStart) {
     for (String block : blockList) {
       int boxX = (this.width / 2) - (maxWidth + 8) / 2; // Center the box horizontally
       graphics.fill(

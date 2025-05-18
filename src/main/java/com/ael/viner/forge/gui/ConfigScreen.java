@@ -6,6 +6,7 @@ import com.ael.viner.forge.config.Config;
 import com.ael.viner.forge.network.packets.ConfigSyncPacket;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
+import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 @OnlyIn(Dist.CLIENT)
@@ -305,7 +305,7 @@ public class ConfigScreen extends Screen {
   }
 
   @Override
-  public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+  public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
     this.renderBackground(graphics); // Renders the background
     super.render(graphics, mouseX, mouseY, partialTicks); // Renders widgets
 
@@ -316,7 +316,7 @@ public class ConfigScreen extends Screen {
     graphics.drawString(this.font, this.title, (this.width - titleWidth) / 2, 15, 0xFFFFFF);
   }
 
-  private void renderTooltips(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
+  private void renderTooltips(@Nonnull GuiGraphics graphics, int mouseX, int mouseY) {
     // Shape Vine Button Tooltip
     if (shapeVineButton.isHoveredOrFocused()) {
       graphics.renderTooltip(

@@ -469,7 +469,7 @@ public class MiningUtils {
    * @return The level of the Unbreaking enchantment, or 0 if not present.
    */
   public static int getUnbreakingLevel(ItemStack tool) {
-    return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, tool);
+    return EnchantmentHelper.getTagEnchantmentLevel(Enchantments.UNBREAKING, tool);
   }
 
   /**

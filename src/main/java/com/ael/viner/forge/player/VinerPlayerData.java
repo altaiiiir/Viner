@@ -10,7 +10,6 @@ import net.minecraft.world.level.block.Block;
 
 public class VinerPlayerData implements IPlayerData {
 
-  private final UUID playerId;
   private List<Block> vineableBlocks;
   private List<Block> unvineableBlocks;
   private List<TagKey<Block>> vineableTags;
@@ -27,7 +26,6 @@ public class VinerPlayerData implements IPlayerData {
   private boolean isShapeVine;
 
   public VinerPlayerData(UUID playerId) {
-    this.playerId = playerId;
     initializeConfig();
   }
 
