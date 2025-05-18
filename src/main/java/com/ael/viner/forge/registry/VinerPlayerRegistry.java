@@ -1,6 +1,5 @@
 package com.ael.viner.forge.registry;
 
-import com.ael.viner.VinerPlayerData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
@@ -10,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.ael.viner.forge.player.VinerPlayerData;
 
 public class VinerPlayerRegistry {
 

@@ -1,4 +1,4 @@
-package com.ael.viner;
+package com.ael.viner.forge.player;
 
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
