@@ -98,18 +98,8 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
             } else {
                 entries = List.of();
             }
-            List<Block> blocks = getBlocksFromConfigEntries(entries);
-            List<TagKey<Block>> tags = getTagsFromConfigEntries(entries);
-
-            List<String> blockIds = blocks.stream()
-                .map((Block block) -> ForgeRegistries.BLOCKS.getKey(block).toString())
-                .collect(Collectors.toList());
-            VinerEntrypoint.get().getPlayerRegistry().setVineableBlocks(player, blockIds);
-
-            List<String> tagNames = tags.stream()
-                .map(tagKey -> tagKey.location().toString())
-                .collect(Collectors.toList());
-            VinerEntrypoint.get().getPlayerRegistry().setVineableTags(player, tagNames);
+            ((com.ael.viner.forge.registry.VinerPlayerRegistry) VinerEntrypoint.get().getPlayerRegistry()).setVineableBlocks(player, entries);
+            ((com.ael.viner.forge.registry.VinerPlayerRegistry) VinerEntrypoint.get().getPlayerRegistry()).setVineableTags(player, entries);
         } else if ("unvineableBlocks".equals(msg.getData().configName()) && msg.getData().type() == ConfigType.BLOCK_LIST) {
             Object value = msg.getData().value();
             List<String> entries;
@@ -120,18 +110,9 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
             } else {
                 entries = List.of();
             }
-            List<Block> blocks = getBlocksFromConfigEntries(entries);
-            List<TagKey<Block>> tags = getTagsFromConfigEntries(entries);
 
-            List<String> blockIds = blocks.stream()
-                .map((Block block) -> ForgeRegistries.BLOCKS.getKey(block).toString())
-                .collect(Collectors.toList());
-            VinerEntrypoint.get().getPlayerRegistry().setUnvineableBlocks(player, blockIds);
-
-            List<String> tagNames = tags.stream()
-                .map(tagKey -> tagKey.location().toString())
-                .collect(Collectors.toList());
-            VinerEntrypoint.get().getPlayerRegistry().setUnvineableTags(player, tagNames);
+            ((com.ael.viner.forge.registry.VinerPlayerRegistry) VinerEntrypoint.get().getPlayerRegistry()).setUnvineableBlocks(player, entries);
+            ((com.ael.viner.forge.registry.VinerPlayerRegistry) VinerEntrypoint.get().getPlayerRegistry()).setUnvineableTags(player, entries);
         }
 
         ctx.get().setPacketHandled(true);

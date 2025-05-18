@@ -35,6 +35,8 @@ import java.util.*;
 import com.ael.viner.common.IPlayerData;
 import com.ael.viner.common.IPlayerRegistry;
 import com.ael.viner.forge.player.VinerPlayerData;
+import com.ael.viner.common.util.BlockTagUtils;
+import net.minecraft.resources.ResourceLocation;
 
 public class MiningUtils {
 
@@ -290,6 +292,14 @@ public class MiningUtils {
     }
 
     /**
+     * Helper to get the block ID as a String (e.g., "minecraft:stone").
+     */
+    private static String getBlockId(Block block) {
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(block);
+        return id != null ? id.toString() : "";
+    }
+
+    /**
      * Checks if a block is vineable based on predefined criteria.
      * A block is considered vineable if:
      * 1. It does not exist in the list of unvineable blocks.
@@ -301,7 +311,9 @@ public class MiningUtils {
     public static boolean isVineable(Block block, Player player) {
         IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
         IPlayerData playerData = registry.getPlayerData(player);
-        return playerData.isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
+        
+        return playerData.isVineAllEnabled()
+            || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
     }
 
 
@@ -314,7 +326,12 @@ public class MiningUtils {
     private static boolean blockExistsInUnvineableBlocks(Block block, Player player) {
         IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
         IPlayerData playerData = registry.getPlayerData(player);
-        return playerData instanceof VinerPlayerData && ((VinerPlayerData) playerData).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
+        String blockId = getBlockId(block);
+        if (playerData instanceof VinerPlayerData vinerData) {
+            return BlockTagUtils.isBlockIdInList(blockId, vinerData.getUnvineableBlockIds())
+                || blockExistsInUnvineableTags(block, player);
+        }
+        return false;
     }
 
     /**
@@ -326,7 +343,12 @@ public class MiningUtils {
     private static boolean blockExistsInVineableBlocks(Block block, Player player) {
         IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
         IPlayerData playerData = registry.getPlayerData(player);
-        return playerData instanceof VinerPlayerData && ((VinerPlayerData) playerData).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
+        String blockId = getBlockId(block);
+        if (playerData instanceof VinerPlayerData vinerData) {
+            return BlockTagUtils.isBlockIdInList(blockId, vinerData.getVineableBlockIds())
+                || blockExistsInVineableTags(block, player);
+        }
+        return false;
     }
 
     /**
@@ -338,13 +360,16 @@ public class MiningUtils {
     private static boolean blockExistsInVineableTags(Block block, Player player) {
         IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
         IPlayerData playerData = registry.getPlayerData(player);
-        if (playerData instanceof VinerPlayerData) {
-            List<TagKey<Block>> tags = ((VinerPlayerData) playerData).getVineableTags();
-            for (var tagKey : tags) {
-                if (tagContainsBlock(tagKey, block)) {
-                    return true;
-                }
-            }
+        String blockId = getBlockId(block);
+        if (playerData instanceof VinerPlayerData vinerData) {
+            return BlockTagUtils.isBlockIdInTags(blockId, vinerData.getVineableTagIds(), tagId -> {
+                TagKey<Block> tagKey = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(tagId));
+                var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
+                
+                return tagBlocks.stream()
+                    .map(MiningUtils::getBlockId)
+                    .collect(java.util.stream.Collectors.toSet());
+            });
         }
         return false;
     }
@@ -358,29 +383,19 @@ public class MiningUtils {
     private static boolean blockExistsInUnvineableTags(Block block, Player player) {
         IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
         IPlayerData playerData = registry.getPlayerData(player);
-        if (playerData instanceof VinerPlayerData) {
-            List<TagKey<Block>> tags = ((VinerPlayerData) playerData).getUnvineableTags();
-            for (var tagKey : tags) {
-                if (tagContainsBlock(tagKey, block)) {
-                    return true;
-                }
-            }
+        String blockId = getBlockId(block);
+        if (playerData instanceof VinerPlayerData vinerData) {
+            return BlockTagUtils.isBlockIdInTags(blockId, vinerData.getUnvineableTagIds(), tagId -> {
+                TagKey<Block> tagKey = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(tagId));
+                var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
+                
+                return tagBlocks.stream()
+                    .map(MiningUtils::getBlockId)
+                    .collect(java.util.stream.Collectors.toSet());
+            });
         }
         return false;
     }
-
-
-    /**
-     * Checks if a specified block is contained within a given tag.
-     *
-     * @param tagKey The key of the tag to check.
-     * @param block  The block to check for within the tag.
-     * @return true if the tag contains the block, false otherwise.
-     */
-    private static boolean tagContainsBlock(TagKey<Block> tagKey, Block block) {
-        return Objects.requireNonNull(ForgeRegistries.BLOCKS.tags()).getTag(tagKey).contains(block);
-    }
-
 
     /**
      * Retrieves the level of the Unbreaking enchantment on a specified tool.

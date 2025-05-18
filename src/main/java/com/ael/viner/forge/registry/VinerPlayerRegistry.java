@@ -142,11 +142,5 @@ public class VinerPlayerRegistry implements IPlayerRegistry {
             getPlayerData(serverPlayer).setVineKeyPressed(pressed);
         }
     }
-
-    // Existing Forge-specific methods (if needed elsewhere)
-    public void setVineKeyPressed(ServerPlayer player, boolean vineKeyPressed) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setVineKeyPressed(vineKeyPressed);
-    }
 }
 

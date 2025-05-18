@@ -170,4 +170,38 @@ public class VinerPlayerData implements IPlayerData {
     public void setShapeVine(boolean isShapeVine) {
         this.isShapeVine = isShapeVine;
     }
+
+    public List<String> getVineableBlockIds() {
+        List<String> ids = new ArrayList<>();
+        for (Block block : vineableBlocks) {
+            ids.add(block != null && net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(block) != null ?
+                net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(block).toString() : "");
+        }
+        return ids;
+    }
+
+    public List<String> getUnvineableBlockIds() {
+        List<String> ids = new ArrayList<>();
+        for (Block block : unvineableBlocks) {
+            ids.add(block != null && net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(block) != null ?
+                net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(block).toString() : "");
+        }
+        return ids;
+    }
+
+    public List<String> getVineableTagIds() {
+        List<String> ids = new ArrayList<>();
+        for (TagKey<Block> tag : vineableTags) {
+            ids.add(tag != null ? tag.location().toString() : "");
+        }
+        return ids;
+    }
+
+    public List<String> getUnvineableTagIds() {
+        List<String> ids = new ArrayList<>();
+        for (TagKey<Block> tag : unvineableTags) {
+            ids.add(tag != null ? tag.location().toString() : "");
+        }
+        return ids;
+    }
 }

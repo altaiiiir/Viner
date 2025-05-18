@@ -187,7 +187,8 @@ public class VinerBlockRegistry {
         List<TagKey<Block>> tags = new ArrayList<>();
         for (String entry : entries) {
             if (entry.startsWith("#")) {
-                tags.add(getTagKeyEntry(entry));
+                TagKey<Block> tagKey = getTagKeyEntry(entry);
+                tags.add(tagKey);
             }
         }
         return tags;
