@@ -1,0 +1,19 @@
+// Simple dependencies for the Common module
+dependencies {
+    // No Minecraft dependencies here - just pure Java
+}
+
+// Configure jar task
+jar {
+    manifest {
+        attributes([
+            'Specification-Title'     : "${mod_id}-common",
+            'Specification-Vendor'    : mod_authors,
+            'Specification-Version'   : '1',
+            'Implementation-Title'    : project.name,
+            'Implementation-Version'  : project.jar.archiveVersion,
+            'Implementation-Vendor'   : mod_authors,
+            'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+} 
