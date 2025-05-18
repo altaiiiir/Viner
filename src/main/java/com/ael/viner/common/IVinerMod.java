@@ -1,7 +1,7 @@
 package com.ael.viner.common;
 
-import com.ael.viner.forge.registry.VinerPlayerRegistry;
+import com.ael.viner.common.IPlayerRegistry;
 
 public interface IVinerMod {
-    VinerPlayerRegistry getPlayerRegistry();
+    IPlayerRegistry getPlayerRegistry();
 } 

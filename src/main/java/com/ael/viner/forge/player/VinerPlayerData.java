@@ -1,5 +1,6 @@
 package com.ael.viner.forge.player;
 
+import com.ael.viner.common.IPlayerData;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 
-public class VinerPlayerData {
+public class VinerPlayerData implements IPlayerData {
 
     private final UUID playerId;
     private List<Block> vineableBlocks;
@@ -79,6 +80,8 @@ public class VinerPlayerData {
     public void setUnvineableTags(List<TagKey<Block>> unvineableTags) {
         this.unvineableTags = unvineableTags;
     }
+
+    @Override
     public boolean isVineKeyPressed() {
         return vineKeyPressed;
     }
@@ -87,6 +90,7 @@ public class VinerPlayerData {
         this.vineKeyPressed = pressed;
     }
 
+    @Override
     public boolean isVineAllEnabled() {
         return vineAllEnabled;
     }
@@ -95,6 +99,7 @@ public class VinerPlayerData {
         this.vineAllEnabled = enabled;
     }
 
+    @Override
     public double getExhaustionPerBlock() {
         return exhaustionPerBlock;
     }
@@ -103,6 +108,7 @@ public class VinerPlayerData {
         this.exhaustionPerBlock = exhaustionPerBlock;
     }
 
+    @Override
     public int getVineableLimit() {
         return vineableLimit;
     }
@@ -111,6 +117,7 @@ public class VinerPlayerData {
         this.vineableLimit = vineableLimit;
     }
 
+    @Override
     public int getHeightAbove() {
         return heightAbove;
     }
@@ -119,6 +126,7 @@ public class VinerPlayerData {
         this.heightAbove = heightAbove;
     }
 
+    @Override
     public int getHeightBelow() {
         return heightBelow;
     }
@@ -127,6 +135,7 @@ public class VinerPlayerData {
         this.heightBelow = heightBelow;
     }
 
+    @Override
     public int getWidthLeft() {
         return widthLeft;
     }
@@ -135,6 +144,7 @@ public class VinerPlayerData {
         this.widthLeft = widthLeft;
     }
 
+    @Override
     public int getWidthRight() {
         return widthRight;
     }
@@ -143,6 +153,7 @@ public class VinerPlayerData {
         this.widthRight = widthRight;
     }
 
+    @Override
     public int getLayerOffset() {
         return layerOffset;
     }
@@ -151,6 +162,12 @@ public class VinerPlayerData {
         this.layerOffset = layerOffset;
     }
 
-    public boolean isShapeVine() { return isShapeVine; }
-    public void setShapeVine(boolean isShapeVine) { this.isShapeVine = isShapeVine; }
+    @Override
+    public boolean isShapeVine() {
+        return isShapeVine;
+    }
+
+    public void setShapeVine(boolean isShapeVine) {
+        this.isShapeVine = isShapeVine;
+    }
 }

@@ -1,8 +1,11 @@
 package com.ael.viner.forge.registry;
 
+import com.ael.viner.common.IPlayerRegistry;
+import com.ael.viner.common.IPlayerData;
+import com.ael.viner.forge.player.VinerPlayerData;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 
 import java.util.HashMap;
@@ -10,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ael.viner.forge.player.VinerPlayerData;
+import static com.ael.viner.forge.registry.VinerBlockRegistry.getBlocksFromConfigEntries;
+import static com.ael.viner.forge.registry.VinerBlockRegistry.getTagsFromConfigEntries;
 
-public class VinerPlayerRegistry {
+public class VinerPlayerRegistry implements IPlayerRegistry {
 
     private final Map<UUID, VinerPlayerData> players;
 
@@ -24,78 +28,125 @@ public class VinerPlayerRegistry {
         return new VinerPlayerRegistry();
     }
 
+    @Override
+    public IPlayerData getPlayerData(Object player) {
+        if (player instanceof Player) {
+            return players.computeIfAbsent(((Player) player).getUUID(), VinerPlayerData::new);
+        }
+        throw new IllegalArgumentException("Player must be a net.minecraft.world.entity.player.Player");
+    }
+
     public VinerPlayerData getPlayerData(Player player) {
         return players.computeIfAbsent(player.getUUID(), VinerPlayerData::new);
     }
 
-    public void setVineableBlocks(ServerPlayer player, List<Block> vineableBlocks) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setVineableBlocks(vineableBlocks);
+    // Loader-agnostic setter implementations
+    @Override
+    public void setVineAllEnabled(Object player, boolean enabled) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setVineAllEnabled(enabled);
+        }
     }
 
-    public void setUnvineableBlocks(ServerPlayer player, List<Block> unvineableBlocks) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setUnvineableBlocks(unvineableBlocks);
+    @Override
+    public void setExhaustionPerBlock(Object player, double exhaustionPerBlock) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setExhaustionPerBlock(exhaustionPerBlock);
+        }
     }
 
-    public void setVineableTags(ServerPlayer player, List<TagKey<Block>> vineableTags) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setVineableTags(vineableTags);
+    @Override
+    public void setVineableLimit(Object player, int vineableLimit) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setVineableLimit(vineableLimit);
+        }
     }
 
-    public void setUnvineableTags(ServerPlayer player, List<TagKey<Block>> unvineableTags) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setUnvineableTags(unvineableTags);
+    @Override
+    public void setHeightAbove(Object player, int heightAbove) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setHeightAbove(heightAbove);
+        }
     }
 
+    @Override
+    public void setHeightBelow(Object player, int heightBelow) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setHeightBelow(heightBelow);
+        }
+    }
+
+    @Override
+    public void setWidthLeft(Object player, int widthLeft) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setWidthLeft(widthLeft);
+        }
+    }
+
+    @Override
+    public void setWidthRight(Object player, int widthRight) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setWidthRight(widthRight);
+        }
+    }
+
+    @Override
+    public void setLayerOffset(Object player, int layerOffset) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setLayerOffset(layerOffset);
+        }
+    }
+
+    @Override
+    public void setShapeVine(Object player, boolean shapeVine) {
+        if (player instanceof ServerPlayer) {
+            getPlayerData((ServerPlayer) player).setShapeVine(shapeVine);
+        }
+    }
+
+    @Override
+    public void setVineableBlocks(Object player, List<String> vineableBlockIds) {
+        if (player instanceof ServerPlayer) {
+            List<Block> blocks = getBlocksFromConfigEntries(vineableBlockIds);
+            getPlayerData((ServerPlayer) player).setVineableBlocks(blocks);
+        }
+    }
+
+    @Override
+    public void setUnvineableBlocks(Object player, List<String> unvineableBlockIds) {
+        if (player instanceof ServerPlayer) {
+            List<Block> blocks = getBlocksFromConfigEntries(unvineableBlockIds);
+            getPlayerData((ServerPlayer) player).setUnvineableBlocks(blocks);
+        }
+    }
+
+    @Override
+    public void setVineableTags(Object player, List<String> vineableTagNames) {
+        if (player instanceof ServerPlayer) {
+            List<TagKey<Block>> tags = getTagsFromConfigEntries(vineableTagNames);
+            getPlayerData((ServerPlayer) player).setVineableTags(tags);
+        }
+    }
+
+    @Override
+    public void setUnvineableTags(Object player, List<String> unvineableTagNames) {
+        if (player instanceof ServerPlayer) {
+            List<TagKey<Block>> tags = getTagsFromConfigEntries(unvineableTagNames);
+            getPlayerData((ServerPlayer) player).setUnvineableTags(tags);
+        }
+    }
+
+    @Override
+    public void setVineKeyPressed(Object player, boolean pressed) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            getPlayerData(serverPlayer).setVineKeyPressed(pressed);
+        }
+    }
+
+    // Existing Forge-specific methods (if needed elsewhere)
     public void setVineKeyPressed(ServerPlayer player, boolean vineKeyPressed) {
         VinerPlayerData playerData = getPlayerData(player);
         playerData.setVineKeyPressed(vineKeyPressed);
-    }
-
-    public void setVineAllEnabled(ServerPlayer player, boolean vineAllEnabled) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setVineAllEnabled(vineAllEnabled);
-    }
-
-    public void setExhaustionPerBlock(ServerPlayer player, double exhaustionPerBlock) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setExhaustionPerBlock(exhaustionPerBlock);
-    }
-
-    public void setVineableLimit(ServerPlayer player, int vineableLimit) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setVineableLimit(vineableLimit);
-    }
-
-    public void setHeightAbove(ServerPlayer player, int heightAbove) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setHeightAbove(heightAbove);
-    }
-
-    public void setHeightBelow(ServerPlayer player, int heightBelow) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setHeightBelow(heightBelow);
-    }
-
-    public void setWidthLeft(ServerPlayer player, int widthLeft) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setWidthLeft(widthLeft);
-    }
-
-    public void setWidthRight(ServerPlayer player, int widthRight) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setWidthRight(widthRight);
-    }
-
-    public void setLayerOffset(ServerPlayer player, int layerOffset) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setLayerOffset(layerOffset);
-    }
-
-    public void setShapeVine(ServerPlayer player, Boolean shapeVine) {
-        VinerPlayerData playerData = getPlayerData(player);
-        playerData.setShapeVine(shapeVine);
     }
 }
 

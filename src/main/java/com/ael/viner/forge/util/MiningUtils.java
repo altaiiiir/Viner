@@ -32,6 +32,10 @@ import org.slf4j.Logger;
 
 import java.util.*;
 
+import com.ael.viner.common.IPlayerData;
+import com.ael.viner.common.IPlayerRegistry;
+import com.ael.viner.forge.player.VinerPlayerData;
+
 public class MiningUtils {
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -50,7 +54,9 @@ public class MiningUtils {
         Level level = player.level();
         ItemStack tool = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        var vineableLimit = VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).getVineableLimit();
+        IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
+        IPlayerData playerData = registry.getPlayerData(player);
+        var vineableLimit = playerData.getVineableLimit();
 
         // Check for client side, return early if true
         if (level.isClientSide() || vineableLimit <= 0)
@@ -293,7 +299,9 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     public static boolean isVineable(Block block, Player player) {
-        return VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
+        IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
+        IPlayerData playerData = registry.getPlayerData(player);
+        return playerData.isVineAllEnabled() || (!blockExistsInUnvineableBlocks(block, player) && blockExistsInVineableBlocks(block, player));
     }
 
 
@@ -304,7 +312,9 @@ public class MiningUtils {
      * @return true if the block is unvineable, false otherwise.
      */
     private static boolean blockExistsInUnvineableBlocks(Block block, Player player) {
-        return VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
+        IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
+        IPlayerData playerData = registry.getPlayerData(player);
+        return playerData instanceof VinerPlayerData && ((VinerPlayerData) playerData).getUnvineableBlocks().contains(block) || blockExistsInUnvineableTags(block, player);
     }
 
     /**
@@ -314,7 +324,9 @@ public class MiningUtils {
      * @return true if the block is vineable, false otherwise.
      */
     private static boolean blockExistsInVineableBlocks(Block block, Player player) {
-        return VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
+        IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
+        IPlayerData playerData = registry.getPlayerData(player);
+        return playerData instanceof VinerPlayerData && ((VinerPlayerData) playerData).getVineableBlocks().contains(block) || blockExistsInVineableTags(block, player);
     }
 
     /**
@@ -324,10 +336,14 @@ public class MiningUtils {
      * @return true if the block is vineable under any tag, false otherwise.
      */
     private static boolean blockExistsInVineableTags(Block block, Player player) {
-        List<TagKey<Block>> tags = VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).getVineableTags();
-        for (var tagKey : tags) {
-            if (tagContainsBlock(tagKey, block)) {
-                return true;
+        IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
+        IPlayerData playerData = registry.getPlayerData(player);
+        if (playerData instanceof VinerPlayerData) {
+            List<TagKey<Block>> tags = ((VinerPlayerData) playerData).getVineableTags();
+            for (var tagKey : tags) {
+                if (tagContainsBlock(tagKey, block)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -340,10 +356,14 @@ public class MiningUtils {
      * @return true if the block is vineable under any tag, false otherwise.
      */
     private static boolean blockExistsInUnvineableTags(Block block, Player player) {
-        List<TagKey<Block>> tags = VinerEntrypoint.get().getPlayerRegistry().getPlayerData(player).getUnvineableTags();
-        for (var tagKey : tags) {
-            if (tagContainsBlock(tagKey, block)) {
-                return true;
+        IPlayerRegistry registry = VinerEntrypoint.get().getPlayerRegistry();
+        IPlayerData playerData = registry.getPlayerData(player);
+        if (playerData instanceof VinerPlayerData) {
+            List<TagKey<Block>> tags = ((VinerPlayerData) playerData).getUnvineableTags();
+            for (var tagKey : tags) {
+                if (tagContainsBlock(tagKey, block)) {
+                    return true;
+                }
             }
         }
         return false;
