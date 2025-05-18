@@ -1,8 +1,8 @@
-package com.ael.viner.gui;
+package com.ael.viner.forge.gui;
 
-import com.ael.viner.config.Config;
-import com.ael.viner.network.packets.ConfigSyncPacket;
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.forge.config.Config;
+import com.ael.viner.forge.network.packets.ConfigSyncPacket;
+import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,10 +12,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+
+import static com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer;
+
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-
-import static com.ael.viner.network.packets.ConfigSyncPacket.syncConfigWithServer;
 
 @OnlyIn(Dist.CLIENT)
 public class ConfigScreen extends Screen {

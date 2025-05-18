@@ -1,12 +1,13 @@
 package com.ael.viner;
 
-import com.ael.viner.registry.VinerBlockRegistry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.ael.viner.forge.registry.VinerBlockRegistry;
 
 public class VinerPlayerData {
 

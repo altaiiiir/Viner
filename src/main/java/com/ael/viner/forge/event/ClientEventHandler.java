@@ -1,6 +1,5 @@
-package com.ael.viner.event;
+package com.ael.viner.forge.event;
 
-import com.ael.viner.gui.ConfigScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;
@@ -11,6 +10,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
+
+import com.ael.viner.forge.gui.ConfigScreen;
 
 import static com.ael.viner.forge.VinerForge.MOD_ID;
 
@@ -28,7 +29,7 @@ public class ClientEventHandler {
         }
         if (VINE_KEY_BINDING.isDown() != vineKeyPressed) {
             vineKeyPressed = VINE_KEY_BINDING.isDown();
-            com.ael.viner.network.VinerPacketHandler.INSTANCE.sendToServer(new com.ael.viner.network.packets.VinerKeyPressedPacket(vineKeyPressed));
+            com.ael.viner.forge.network.VinerPacketHandler.INSTANCE.sendToServer(new com.ael.viner.forge.network.packets.VinerKeyPressedPacket(vineKeyPressed));
         }
     }
 

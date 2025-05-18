@@ -1,6 +1,6 @@
-package com.ael.viner.gui;
+package com.ael.viner.forge.gui;
 
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

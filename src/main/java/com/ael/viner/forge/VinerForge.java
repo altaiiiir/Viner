@@ -1,9 +1,10 @@
 package com.ael.viner.forge;
 
-import com.ael.viner.common.CommonSetup;
-import com.ael.viner.config.Config;
-import com.ael.viner.network.VinerPacketHandler;
-import com.ael.viner.registry.VinerPlayerRegistry;
+import com.ael.viner.forge.config.Config;
+import com.ael.viner.forge.network.VinerPacketHandler;
+import com.ael.viner.forge.registry.VinerPlayerRegistry;
+import com.ael.viner.forge.setup.CommonSetup;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;

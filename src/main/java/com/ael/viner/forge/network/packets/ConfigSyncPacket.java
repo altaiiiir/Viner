@@ -1,7 +1,7 @@
-package com.ael.viner.network.packets;
+package com.ael.viner.forge.network.packets;
 
 import com.ael.viner.common.VinerEntrypoint;
-import com.ael.viner.network.VinerPacketHandler;
+import com.ael.viner.forge.network.VinerPacketHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,11 +11,11 @@ import net.minecraftforge.network.NetworkEvent;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
+import static com.ael.viner.forge.registry.VinerBlockRegistry.getBlocksFromConfigEntries;
+import static com.ael.viner.forge.registry.VinerBlockRegistry.getTagsFromConfigEntries;
+
 import java.util.List;
 import java.util.function.Supplier;
-
-import static com.ael.viner.registry.VinerBlockRegistry.getBlocksFromConfigEntries;
-import static com.ael.viner.registry.VinerBlockRegistry.getTagsFromConfigEntries;
 
 public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData> {
 

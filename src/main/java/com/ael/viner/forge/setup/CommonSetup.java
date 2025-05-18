@@ -1,6 +1,7 @@
-package com.ael.viner.common;
+package com.ael.viner.forge.setup;
 
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.forge.registry.VinerBlockRegistry;
+
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class CommonSetup {
@@ -10,4 +11,4 @@ public class CommonSetup {
         VinerBlockRegistry.setup();
     }
 
-}
+} 

@@ -1,8 +1,9 @@
-package com.ael.viner.event;
+package com.ael.viner.forge.event;
 
-import com.ael.viner.network.VinerPacketHandler;
-import com.ael.viner.network.packets.ConfigSyncPacket;
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.forge.network.VinerPacketHandler;
+import com.ael.viner.forge.network.packets.ConfigSyncPacket;
+import com.ael.viner.forge.registry.VinerBlockRegistry;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

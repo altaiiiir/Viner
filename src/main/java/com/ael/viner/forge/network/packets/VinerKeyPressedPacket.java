@@ -1,4 +1,4 @@
-package com.ael.viner.network.packets;
+package com.ael.viner.forge.network.packets;
 
 import com.ael.viner.common.VinerEntrypoint;
 import net.minecraftforge.network.NetworkEvent;

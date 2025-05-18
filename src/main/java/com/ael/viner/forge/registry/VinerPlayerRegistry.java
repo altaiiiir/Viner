@@ -1,4 +1,4 @@
-package com.ael.viner.registry;
+package com.ael.viner.forge.registry;
 
 import com.ael.viner.VinerPlayerData;
 import net.minecraft.server.level.ServerPlayer;

@@ -1,4 +1,4 @@
-package com.ael.viner.util;
+package com.ael.viner.forge.util;
 
 import com.ael.viner.common.VinerEntrypoint;
 import com.mojang.logging.LogUtils;

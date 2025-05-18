@@ -1,4 +1,4 @@
-package com.ael.viner.gui;
+package com.ael.viner.forge.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractSliderButton;

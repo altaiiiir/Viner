@@ -1,10 +1,10 @@
-package com.ael.viner.network;
+package com.ael.viner.forge.network;
 
 import com.ael.viner.forge.VinerForge;
-import com.ael.viner.network.packets.ConfigSyncPacket;
-import com.ael.viner.network.packets.MouseScrollPacket;
-import com.ael.viner.network.packets.VeinMiningPacket;
-import com.ael.viner.network.packets.VinerKeyPressedPacket;
+import com.ael.viner.forge.network.packets.ConfigSyncPacket;
+import com.ael.viner.forge.network.packets.VeinMiningPacket;
+import com.ael.viner.forge.network.packets.VinerKeyPressedPacket;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -42,10 +42,6 @@ public class VinerPacketHandler {
 
         INSTANCE.registerMessage(id++, VinerKeyPressedPacket.class, VinerKeyPressedPacket::encode,
                 buf -> VinerKeyPressedPacket.decode(buf, VinerKeyPressedPacket.FACTORY),
-                (packet, ctx) -> packet.handle(packet, ctx));
-
-        INSTANCE.registerMessage(id++, MouseScrollPacket.class, MouseScrollPacket::encode,
-                buf -> MouseScrollPacket.decode(buf, MouseScrollPacket.FACTORY),
                 (packet, ctx) -> packet.handle(packet, ctx));
 
         INSTANCE.registerMessage(id++, ConfigSyncPacket.class, ConfigSyncPacket::encode,

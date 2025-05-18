@@ -1,6 +1,6 @@
-package com.ael.viner.registry;
+package com.ael.viner.forge.registry;
 
-import com.ael.viner.config.Config;
+import com.ael.viner.forge.config.Config;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

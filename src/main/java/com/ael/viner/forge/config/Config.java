@@ -1,7 +1,7 @@
-package com.ael.viner.config;
+package com.ael.viner.forge.config;
 
 import com.ael.viner.forge.VinerForge;
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

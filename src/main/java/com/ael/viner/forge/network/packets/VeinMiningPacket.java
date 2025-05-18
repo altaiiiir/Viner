@@ -1,12 +1,13 @@
-package com.ael.viner.network.packets;
+package com.ael.viner.forge.network.packets;
 
-import com.ael.viner.util.MiningUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import org.jetbrains.annotations.NotNull;
+
+import com.ael.viner.forge.util.MiningUtils;
 
 import java.util.List;
 import java.util.function.Supplier;

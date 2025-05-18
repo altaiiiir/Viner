@@ -1,7 +1,8 @@
-package com.ael.viner.event;
+package com.ael.viner.forge.event;
 
 import com.ael.viner.common.VinerEntrypoint;
-import com.ael.viner.util.MiningUtils;
+import com.ael.viner.forge.util.MiningUtils;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;

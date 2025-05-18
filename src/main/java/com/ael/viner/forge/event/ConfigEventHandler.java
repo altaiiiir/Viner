@@ -1,7 +1,8 @@
-package com.ael.viner.common;
+package com.ael.viner.forge.event;
 
 import com.ael.viner.forge.VinerForge;
-import com.ael.viner.registry.VinerBlockRegistry;
+import com.ael.viner.forge.registry.VinerBlockRegistry;
+
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -31,5 +32,4 @@ public class ConfigEventHandler {
             VinerBlockRegistry.setup();
         }
     }
-}
-
+} 
