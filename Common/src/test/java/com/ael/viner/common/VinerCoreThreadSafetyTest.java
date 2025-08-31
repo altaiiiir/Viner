@@ -3,7 +3,6 @@ package com.ael.viner.common;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 /**
- * Thread safety and concurrent access tests for VinerCore singleton.
- * Tests behavior under concurrent access scenarios.
+ * Thread safety and concurrent access tests for VinerCore singleton. Tests behavior under
+ * concurrent access scenarios.
  */
 class VinerCoreThreadSafetyTest {
 
@@ -66,22 +65,24 @@ class VinerCoreThreadSafetyTest {
     // Act - Multiple threads trying to set instance concurrently
     for (int i = 0; i < threadCount; i++) {
       final int index = i;
-      executor.submit(() -> {
-        try {
-          startLatch.await();
-          VinerCore.setInstance(mockMods[index]);
-          successCount.incrementAndGet();
-        } catch (Exception e) {
-          exception.compareAndSet(null, e);
-        } finally {
-          finishLatch.countDown();
-        }
-      });
+      executor.submit(
+          () -> {
+            try {
+              startLatch.await();
+              VinerCore.setInstance(mockMods[index]);
+              successCount.incrementAndGet();
+            } catch (Exception e) {
+              exception.compareAndSet(null, e);
+            } finally {
+              finishLatch.countDown();
+            }
+          });
     }
 
     // Start all threads simultaneously
     startLatch.countDown();
-    assertTrue(finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
+    assertTrue(
+        finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
 
     // Assert
     assertNull(exception.get(), "No exceptions should occur during concurrent setting");
@@ -105,25 +106,27 @@ class VinerCoreThreadSafetyTest {
     AtomicInteger successCount = new AtomicInteger(0);
     AtomicReference<Exception> exception = new AtomicReference<>();
 
-    // Act - Multiple threads getting instance concurrently  
+    // Act - Multiple threads getting instance concurrently
     for (int i = 0; i < threadCount; i++) {
-      executor.submit(() -> {
-        try {
-          startLatch.await();
-          IVinerMod retrieved = VinerCore.get();
-          if (retrieved == mockMod) {
-            successCount.incrementAndGet();
-          }
-        } catch (Exception e) {
-          exception.compareAndSet(null, e);
-        } finally {
-          finishLatch.countDown();
-        }
-      });
+      executor.submit(
+          () -> {
+            try {
+              startLatch.await();
+              IVinerMod retrieved = VinerCore.get();
+              if (retrieved == mockMod) {
+                successCount.incrementAndGet();
+              }
+            } catch (Exception e) {
+              exception.compareAndSet(null, e);
+            } finally {
+              finishLatch.countDown();
+            }
+          });
     }
 
     startLatch.countDown();
-    assertTrue(finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
+    assertTrue(
+        finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
 
     // Assert
     assertNull(exception.get(), "No exceptions should occur during concurrent getting");
@@ -148,28 +151,30 @@ class VinerCoreThreadSafetyTest {
 
     // Act - Multiple threads accessing player registry concurrently
     for (int i = 0; i < threadCount; i++) {
-      executor.submit(() -> {
-        try {
-          startLatch.await();
-          IPlayerRegistry registry = VinerCore.getPlayerRegistry();
-          if (registry == mockRegistry) {
-            successCount.incrementAndGet();
-          }
-        } catch (Exception e) {
-          exception.compareAndSet(null, e);
-        } finally {
-          finishLatch.countDown();
-        }
-      });
+      executor.submit(
+          () -> {
+            try {
+              startLatch.await();
+              IPlayerRegistry registry = VinerCore.getPlayerRegistry();
+              if (registry == mockRegistry) {
+                successCount.incrementAndGet();
+              }
+            } catch (Exception e) {
+              exception.compareAndSet(null, e);
+            } finally {
+              finishLatch.countDown();
+            }
+          });
     }
 
     startLatch.countDown();
-    assertTrue(finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
+    assertTrue(
+        finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
 
     // Assert
     assertNull(exception.get(), "No exceptions should occur during concurrent registry access");
     assertEquals(threadCount, successCount.get(), "All threads should retrieve the same registry");
-    
+
     // Verify the mock was called the expected number of times
     verify(mockMod, times(threadCount)).getPlayerRegistry();
   }
@@ -193,38 +198,41 @@ class VinerCoreThreadSafetyTest {
     // Setter threads
     for (int i = 0; i < setterThreads; i++) {
       final int index = i;
-      executor.submit(() -> {
-        try {
-          startLatch.await();
-          Thread.sleep((long) (Math.random() * 10)); // Random delay
-          VinerCore.setInstance(mockMods[index]);
-        } catch (Exception e) {
-          exception.compareAndSet(null, e);
-        } finally {
-          finishLatch.countDown();
-        }
-      });
+      executor.submit(
+          () -> {
+            try {
+              startLatch.await();
+              Thread.sleep((long) (Math.random() * 10)); // Random delay
+              VinerCore.setInstance(mockMods[index]);
+            } catch (Exception e) {
+              exception.compareAndSet(null, e);
+            } finally {
+              finishLatch.countDown();
+            }
+          });
     }
 
     // Getter threads
     for (int i = 0; i < getterThreads; i++) {
-      executor.submit(() -> {
-        try {
-          startLatch.await();
-          Thread.sleep((long) (Math.random() * 10)); // Random delay
-          IVinerMod instance = VinerCore.get();
-          // Instance can be null or any of the mock instances - both are valid
-        } catch (Exception e) {
-          exception.compareAndSet(null, e);
-        } finally {
-          finishLatch.countDown();
-        }
-      });
+      executor.submit(
+          () -> {
+            try {
+              startLatch.await();
+              Thread.sleep((long) (Math.random() * 10)); // Random delay
+              IVinerMod instance = VinerCore.get();
+              // Instance can be null or any of the mock instances - both are valid
+            } catch (Exception e) {
+              exception.compareAndSet(null, e);
+            } finally {
+              finishLatch.countDown();
+            }
+          });
     }
 
     // Start all threads
     startLatch.countDown();
-    assertTrue(finishLatch.await(10, TimeUnit.SECONDS), "All threads should complete within 10 seconds");
+    assertTrue(
+        finishLatch.await(10, TimeUnit.SECONDS), "All threads should complete within 10 seconds");
 
     // Assert
     assertNull(exception.get(), "No exceptions should occur during race conditions");
@@ -256,29 +264,31 @@ class VinerCoreThreadSafetyTest {
 
     // Act - Multiple threads trying to get player registry when instance is null
     for (int i = 0; i < threadCount; i++) {
-      executor.submit(() -> {
-        try {
-          startLatch.await();
-          try {
-            IPlayerRegistry registry = VinerCore.getPlayerRegistry();
-            if (registry == null) {
-              nullCount.incrementAndGet();
+      executor.submit(
+          () -> {
+            try {
+              startLatch.await();
+              try {
+                IPlayerRegistry registry = VinerCore.getPlayerRegistry();
+                if (registry == null) {
+                  nullCount.incrementAndGet();
+                }
+              } catch (NullPointerException e) {
+                // Expected when instance is null
+                exceptionCount.incrementAndGet();
+              }
+            } catch (Exception e) {
+              // Unexpected exception - should not happen
+              fail("Unexpected exception: " + e.getMessage());
+            } finally {
+              finishLatch.countDown();
             }
-          } catch (NullPointerException e) {
-            // Expected when instance is null
-            exceptionCount.incrementAndGet();
-          }
-        } catch (Exception e) {
-          // Unexpected exception - should not happen
-          fail("Unexpected exception: " + e.getMessage());
-        } finally {
-          finishLatch.countDown();
-        }
-      });
+          });
     }
 
     startLatch.countDown();
-    assertTrue(finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
+    assertTrue(
+        finishLatch.await(5, TimeUnit.SECONDS), "All threads should complete within 5 seconds");
 
     // Assert
     assertEquals(threadCount, exceptionCount.get(), "All threads should get NullPointerException");

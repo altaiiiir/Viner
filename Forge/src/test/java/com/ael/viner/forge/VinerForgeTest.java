@@ -3,19 +3,16 @@ package com.ael.viner.forge;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.ael.viner.common.IPlayerRegistry;
 import com.ael.viner.common.VinerCore;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for VinerForge class.
- * Tests Forge-specific mod initialization and singleton behavior.
- * 
- * Note: These tests focus on unit testing without full Minecraft environment.
- * Integration tests would require a different approach with Minecraft Test Framework.
+ * Unit tests for VinerForge class. Tests Forge-specific mod initialization and singleton behavior.
+ *
+ * <p>Note: These tests focus on unit testing without full Minecraft environment. Integration tests
+ * would require a different approach with Minecraft Test Framework.
  */
 class VinerForgeTest {
 
@@ -47,10 +44,10 @@ class VinerForgeTest {
     // Arrange
     com.ael.viner.common.IVinerMod mockMod = mock(com.ael.viner.common.IVinerMod.class);
     VinerCore.setInstance(mockMod);
-    
+
     // Act
     VinerForge result = VinerForge.getInstance();
-    
+
     // Assert
     assertNull(result);
   }

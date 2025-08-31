@@ -5,10 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for Position record.
- * Tests the record functionality and basic operations.
- */
+/** Unit tests for Position record. Tests the record functionality and basic operations. */
 class PositionTest {
 
   @Test
@@ -16,7 +13,7 @@ class PositionTest {
   void createPosition() {
     // Arrange & Act
     Position position = new Position(10, 20, 30);
-    
+
     // Assert
     assertEquals(10, position.x());
     assertEquals(20, position.y());
@@ -28,7 +25,7 @@ class PositionTest {
   void handleNegativeCoordinates() {
     // Arrange & Act
     Position position = new Position(-5, -10, -15);
-    
+
     // Assert
     assertEquals(-5, position.x());
     assertEquals(-10, position.y());
@@ -42,7 +39,7 @@ class PositionTest {
     Position position1 = new Position(1, 2, 3);
     Position position2 = new Position(1, 2, 3);
     Position position3 = new Position(1, 2, 4);
-    
+
     // Assert
     assertEquals(position1, position2);
     assertNotEquals(position1, position3);
@@ -54,7 +51,7 @@ class PositionTest {
     // Arrange
     Position position1 = new Position(5, 10, 15);
     Position position2 = new Position(5, 10, 15);
-    
+
     // Assert
     assertEquals(position1.hashCode(), position2.hashCode());
   }
@@ -64,10 +61,10 @@ class PositionTest {
   void testToString() {
     // Arrange
     Position position = new Position(100, 200, 300);
-    
+
     // Act
     String result = position.toString();
-    
+
     // Assert
     assertTrue(result.contains("100"));
     assertTrue(result.contains("200"));

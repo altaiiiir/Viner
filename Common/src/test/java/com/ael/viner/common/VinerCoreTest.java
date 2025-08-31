@@ -8,10 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for VinerCore class.
- * Tests the singleton pattern and mod instance management.
- */
+/** Unit tests for VinerCore class. Tests the singleton pattern and mod instance management. */
 class VinerCoreTest {
 
   private IVinerMod mockMod;
@@ -35,7 +32,7 @@ class VinerCoreTest {
   void setAndGetInstance() {
     // Act
     VinerCore.setInstance(mockMod);
-    
+
     // Assert
     assertSame(mockMod, VinerCore.get());
   }
@@ -52,10 +49,10 @@ class VinerCoreTest {
   void getPlayerRegistry() {
     // Arrange
     VinerCore.setInstance(mockMod);
-    
+
     // Act
     IPlayerRegistry result = VinerCore.getPlayerRegistry();
-    
+
     // Assert
     assertSame(mockPlayerRegistry, result);
     verify(mockMod).getPlayerRegistry();
@@ -65,9 +62,11 @@ class VinerCoreTest {
   @DisplayName("Should throw exception when getting player registry with no instance")
   void throwExceptionWhenGettingPlayerRegistryWithNoInstance() {
     // Assert
-    assertThrows(NullPointerException.class, () -> {
-      VinerCore.getPlayerRegistry();
-    });
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          VinerCore.getPlayerRegistry();
+        });
   }
 
   @Test
@@ -83,13 +82,13 @@ class VinerCoreTest {
     // Arrange
     IVinerMod firstMod = mock(IVinerMod.class);
     IVinerMod secondMod = mock(IVinerMod.class);
-    
+
     // Act
     VinerCore.setInstance(firstMod);
     assertEquals(firstMod, VinerCore.get());
-    
+
     VinerCore.setInstance(secondMod);
-    
+
     // Assert
     assertSame(secondMod, VinerCore.get());
     assertNotSame(firstMod, VinerCore.get());

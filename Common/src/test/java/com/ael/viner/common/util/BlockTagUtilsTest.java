@@ -9,8 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for BlockTagUtils utility class.
- * Tests block tag parsing and validation functionality.
+ * Unit tests for BlockTagUtils utility class. Tests block tag parsing and validation functionality.
  */
 class BlockTagUtilsTest {
 
@@ -19,10 +18,10 @@ class BlockTagUtilsTest {
   void parseValidBlockResourceLocation() {
     // This test will depend on the actual implementation of BlockTagUtils
     // For now, we'll test the structure and assumptions
-    
+
     // Arrange
     String validBlockId = "minecraft:stone";
-    
+
     // Act & Assert
     // BlockTagUtils should be able to handle valid resource locations
     assertTrue(validBlockId.contains(":"));
@@ -34,7 +33,7 @@ class BlockTagUtilsTest {
   void parseValidTagResourceLocation() {
     // Arrange
     String validTagId = "#minecraft:ores";
-    
+
     // Act & Assert
     assertTrue(validTagId.startsWith("#"));
     assertTrue(validTagId.contains(":"));
@@ -46,7 +45,7 @@ class BlockTagUtilsTest {
     // Arrange
     String blockId = "minecraft:iron_ore";
     String tagId = "#minecraft:ores";
-    
+
     // Act & Assert
     assertFalse(blockId.startsWith("#"));
     assertTrue(tagId.startsWith("#"));
@@ -56,17 +55,13 @@ class BlockTagUtilsTest {
   @DisplayName("Should handle list of mixed blocks and tags")
   void handleMixedBlocksAndTags() {
     // Arrange
-    List<String> mixedList = Arrays.asList(
-        "minecraft:stone",
-        "#minecraft:ores", 
-        "minecraft:coal_ore",
-        "#forge:gems"
-    );
-    
+    List<String> mixedList =
+        Arrays.asList("minecraft:stone", "#minecraft:ores", "minecraft:coal_ore", "#forge:gems");
+
     // Act
     long blockCount = mixedList.stream().filter(s -> !s.startsWith("#")).count();
     long tagCount = mixedList.stream().filter(s -> s.startsWith("#")).count();
-    
+
     // Assert
     assertEquals(2, blockCount);
     assertEquals(2, tagCount);
@@ -81,7 +76,7 @@ class BlockTagUtilsTest {
     String invalidFormat1 = "stone"; // Missing namespace
     String invalidFormat2 = ":stone"; // Empty namespace
     String invalidFormat3 = "minecraft:"; // Empty path
-    
+
     // Act & Assert
     assertTrue(isValidResourceLocationFormat(validFormat));
     assertFalse(isValidResourceLocationFormat(invalidFormat1));
@@ -93,12 +88,9 @@ class BlockTagUtilsTest {
   @DisplayName("Should handle common namespaces")
   void handleCommonNamespaces() {
     // Arrange
-    List<String> commonNamespaces = Arrays.asList(
-        "minecraft:stone",
-        "forge:ores",
-        "modid:custom_block"
-    );
-    
+    List<String> commonNamespaces =
+        Arrays.asList("minecraft:stone", "forge:ores", "modid:custom_block");
+
     // Act & Assert
     for (String resourceLocation : commonNamespaces) {
       assertTrue(isValidResourceLocationFormat(resourceLocation));
@@ -110,25 +102,24 @@ class BlockTagUtilsTest {
   }
 
   /**
-   * Helper method to validate resource location format.
-   * This simulates what BlockTagUtils might do internally.
+   * Helper method to validate resource location format. This simulates what BlockTagUtils might do
+   * internally.
    */
   private boolean isValidResourceLocationFormat(String resourceLocation) {
     if (resourceLocation == null || resourceLocation.isEmpty()) {
       return false;
     }
-    
+
     // Remove tag prefix if present
-    String cleanLocation = resourceLocation.startsWith("#") 
-        ? resourceLocation.substring(1) 
-        : resourceLocation;
-    
+    String cleanLocation =
+        resourceLocation.startsWith("#") ? resourceLocation.substring(1) : resourceLocation;
+
     // Check for exactly one colon
     String[] parts = cleanLocation.split(":");
     if (parts.length != 2) {
       return false;
     }
-    
+
     // Check that both namespace and path are non-empty
     return !parts[0].isEmpty() && !parts[1].isEmpty();
   }
