@@ -41,4 +41,79 @@ allprojects {
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
     }
+
+    // Configure testing
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+        testImplementation 'org.mockito:mockito-core:5.5.0'
+        testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+        testImplementation 'org.junit.platform:junit-platform-suite:1.10.0'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    test {
+        useJUnitPlatform()
+        
+        // Show detailed test results
+        testLogging {
+            events "passed", "skipped", "failed", "standard_out", "standard_error"
+            exceptionFormat = 'full'
+            showStandardStreams = true
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
+        
+        // Show summary after test execution
+        afterSuite { desc, result ->
+            if (!desc.parent) {
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+}
+
+// Root project tasks for comprehensive testing
+task testAll {
+    description = 'Run all tests across all subprojects'
+    group = 'verification'
+    dependsOn subprojects*.test
+    
+    doLast {
+        println "\n" + "="*80
+        println "COMPREHENSIVE TEST RESULTS SUMMARY"
+        println "="*80
+        
+        def totalTests = 0
+        def totalPassed = 0  
+        def totalFailed = 0
+        def totalSkipped = 0
+        
+        subprojects.each { project ->
+            if (project.tasks.findByName('test')?.state?.executed) {
+                def testResults = project.tasks.test.testLogging
+                println "\n${project.name} Module Results:"
+                // Results will be shown by individual test tasks
+            }
+        }
+        
+        println "\n" + "="*80
+        println "All module tests completed. See individual results above."
+        println "="*80
+    }
+}
+
+task testCommon {
+    description = 'Run tests for Common module only'
+    group = 'verification'
+    dependsOn ':Common:test'
+}
+
+task testForge {
+    description = 'Run tests for Forge module only'  
+    group = 'verification'
+    dependsOn ':Forge:test'
 } 

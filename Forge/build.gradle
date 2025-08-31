@@ -49,7 +49,17 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     implementation project(':Common')
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    
+    // Test dependencies for Forge module
+    testImplementation project(':Common')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+// Enable tests for Forge module  
+test.enabled = true
 
 // Process resources to replace variables in mods.toml
 processResources {

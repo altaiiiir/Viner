@@ -3,6 +3,20 @@ dependencies {
     // No Minecraft dependencies here - just pure Java
 }
 
+// Enable tests for Common module (they're disabled in root project)
+test.enabled = true
+
+// Configure test task specifically for Common module
+test {
+    useJUnitPlatform()
+    
+    testLogging {
+        events "passed", "skipped", "failed", "standard_out", "standard_error"
+        exceptionFormat = 'full'
+        showStandardStreams = true
+    }
+}
+
 // Configure jar task
 jar {
     manifest {
