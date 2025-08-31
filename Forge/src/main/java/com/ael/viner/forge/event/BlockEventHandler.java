@@ -46,7 +46,7 @@ public class BlockEventHandler {
       return;
     }
 
-    if (playerConfig.isVineAllEnabled() && MiningUtils.isVineable(blockState.getBlock(), player)) {
+    if (MiningUtils.isVineable(blockState.getBlock(), player)) {
       // Get the player's look position for pattern mining
       Vec3i lookPos =
           new Vec3i(

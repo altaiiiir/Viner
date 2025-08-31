@@ -19,9 +19,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Handles player-related events for the Viner mod.
- */
+/** Handles player-related events for the Viner mod. */
 @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerEventHandler {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -35,13 +33,14 @@ public class PlayerEventHandler {
   public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
     if (event.getEntity() instanceof ServerPlayer player) {
       LOGGER.info("Player logged in: {}", player.getName().getString());
-      
+
       // Ensure the block registry is up to date
       VinerBlockRegistry.setup();
-      
+
       // Initialize player data
       VinerForge instance = VinerForge.getInstance();
-      if (instance != null && instance.getPlayerRegistry() instanceof VinerPlayerRegistry registry) {
+      if (instance != null
+          && instance.getPlayerRegistry() instanceof VinerPlayerRegistry registry) {
         // Force refresh this player's data
         registry.getPlayerData(player); // This creates the player data if it doesn't exist
         LOGGER.info("Initialized Viner data for player: {}", player.getName().getString());
@@ -54,12 +53,12 @@ public class PlayerEventHandler {
     if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) {
       return;
     }
-    
+
     List<String> vineableBlocks =
         VinerBlockRegistry.getVineableBlocks().stream()
             .map(block -> Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(block)).toString())
             .collect(Collectors.toList());
-            
+
     ConfigSyncPacket vineableBlocksPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
