@@ -1,8 +1,5 @@
 package com.ael.viner.forge.gui;
 
-import com.ael.viner.forge.VinerForge;
-import com.ael.viner.forge.registry.VinerBlockRegistry;
-import com.ael.viner.forge.registry.VinerPlayerRegistry;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,13 +136,6 @@ public class BlockListScreen extends Screen {
   private void applyConfigChanges(List<String> updatedList) {
     try {
       configUpdater.accept(updatedList);
-      VinerBlockRegistry.setup();
-      if (VinerForge.getInstance() != null) {
-        var registry = VinerForge.getInstance().getPlayerRegistry();
-        if (registry instanceof VinerPlayerRegistry vinerRegistry) {
-          vinerRegistry.refreshAllPlayers();
-        }
-      }
       Minecraft.getInstance()
           .setScreen(
               new BlockListScreen(parent, this.title.getString(), updatedList, configUpdater));

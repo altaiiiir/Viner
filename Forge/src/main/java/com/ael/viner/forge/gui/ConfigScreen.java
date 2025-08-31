@@ -2,11 +2,8 @@ package com.ael.viner.forge.gui;
 
 import static com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer;
 
-import com.ael.viner.forge.VinerForge;
 import com.ael.viner.forge.config.Config;
 import com.ael.viner.forge.network.packets.ConfigSyncPacket;
-import com.ael.viner.forge.registry.VinerBlockRegistry;
-import com.ael.viner.forge.registry.VinerPlayerRegistry;
 import com.mojang.logging.LogUtils;
 import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
@@ -300,15 +297,6 @@ public class ConfigScreen extends Screen {
   private void applyConfigChanges() {
     try {
       LOGGER.info("Applying configuration changes from GUI");
-      // Update the block registry
-      VinerBlockRegistry.setup();
-
-      // Update player data if we have a valid instance
-      if (VinerForge.getInstance() != null
-          && VinerForge.getInstance().getPlayerRegistry() instanceof VinerPlayerRegistry registry) {
-        LOGGER.info("Refreshing player data based on UI changes");
-        registry.refreshAllPlayers();
-      }
 
       Minecraft.getInstance().setScreen(null);
     } catch (NumberFormatException e) {

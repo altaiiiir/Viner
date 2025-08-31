@@ -27,7 +27,8 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
               case INT -> buf.readInt();
               case BLOCK_LIST -> buf.readCollection(ArrayList::new, FriendlyByteBuf::readUtf);
             };
-        return new ConfigSyncPacket(new ConfigData(type, value, null));
+        String configName = buf.readUtf();
+        return new ConfigSyncPacket(new ConfigData(type, value, configName));
       };
 
   public ConfigSyncPacket(ConfigData data) {
@@ -48,6 +49,7 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
         buf.writeCollection(list, FriendlyByteBuf::writeUtf);
       }
     }
+    buf.writeUtf(data.configName() != null ? data.configName() : "");
   }
 
   public static void syncConfigWithServer(ConfigType type, Object value, String configName) {
