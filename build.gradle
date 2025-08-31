@@ -81,29 +81,6 @@ task testAll {
     description = 'Run all tests across all subprojects'
     group = 'verification'
     dependsOn subprojects*.test
-    
-    doLast {
-        println "\n" + "="*80
-        println "COMPREHENSIVE TEST RESULTS SUMMARY"
-        println "="*80
-        
-        def totalTests = 0
-        def totalPassed = 0  
-        def totalFailed = 0
-        def totalSkipped = 0
-        
-        subprojects.each { project ->
-            if (project.tasks.findByName('test')?.state?.executed) {
-                def testResults = project.tasks.test.testLogging
-                println "\n${project.name} Module Results:"
-                // Results will be shown by individual test tasks
-            }
-        }
-        
-        println "\n" + "="*80
-        println "All module tests completed. See individual results above."
-        println "="*80
-    }
 }
 
 task testCommon {
