@@ -1,4 +1,4 @@
-package com.ael.viner.forge.gui;
+package com.ael.viner.common.gui;
 
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;

@@ -40,4 +40,13 @@ public class VinerCore {
   public static IPlayerRegistry getPlayerRegistry() {
     return instance.getPlayerRegistry();
   }
+
+  /**
+   * Get the config manager.
+   *
+   * @return The config manager
+   */
+  public static com.ael.viner.common.config.IConfigManager getConfigManager() {
+    return instance.getConfigManager();
+  }
 }

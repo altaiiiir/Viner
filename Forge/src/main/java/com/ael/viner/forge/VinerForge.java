@@ -3,7 +3,9 @@ package com.ael.viner.forge;
 import com.ael.viner.common.IPlayerRegistry;
 import com.ael.viner.common.IVinerMod;
 import com.ael.viner.common.VinerCore;
+import com.ael.viner.common.config.IConfigManager;
 import com.ael.viner.forge.config.Config;
+import com.ael.viner.forge.config.ForgeConfigManager;
 import com.ael.viner.forge.network.VinerPacketHandler;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.ael.viner.forge.registry.VinerPlayerRegistry;
@@ -26,6 +28,7 @@ public class VinerForge implements IVinerMod {
   public static final String MOD_ID = VinerCore.MOD_ID;
 
   private final VinerPlayerRegistry vinerPlayerRegistry;
+  private final ForgeConfigManager configManager;
 
   /**
    * Constructor for the VinerForge class. This is where we register Forge-specific functionality.
@@ -36,6 +39,9 @@ public class VinerForge implements IVinerMod {
 
     // Create the player registry
     vinerPlayerRegistry = VinerPlayerRegistry.create();
+
+    // Create the config manager
+    configManager = new ForgeConfigManager();
 
     // Get the mod event bus
     IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -68,6 +74,11 @@ public class VinerForge implements IVinerMod {
   @Override
   public IPlayerRegistry getPlayerRegistry() {
     return vinerPlayerRegistry;
+  }
+
+  @Override
+  public IConfigManager getConfigManager() {
+    return configManager;
   }
 
   private void onCommonSetup(final FMLCommonSetupEvent event) {
