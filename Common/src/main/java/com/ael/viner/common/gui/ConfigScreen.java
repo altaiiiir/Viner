@@ -294,7 +294,7 @@ public class ConfigScreen extends Screen {
                 button -> {
                   applyConfigChanges();
                 })
-            .pos((this.width / 2) - 30, this.height - 30)
+            .pos((this.width / 2) - (boxWidth / 2), this.height - 30)
             .width(boxWidth)
             .build());
   }

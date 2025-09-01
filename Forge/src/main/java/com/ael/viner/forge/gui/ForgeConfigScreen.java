@@ -31,9 +31,54 @@ public class ForgeConfigScreen extends ConfigScreen {
                     ConfigSyncPacket.ConfigType.BLOCK_LIST,
                     new ForgeConfigManager().getUnvineableBlocks(),
                     "unvineableBlocks");
+            case "vineAll" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.BOOLEAN,
+                    new ForgeConfigManager().getVineAll(),
+                    "vineAll");
+            case "shapeVine" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.BOOLEAN,
+                    new ForgeConfigManager().getShapeVine(),
+                    "shapeVine");
+            case "vineableLimit" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.INT,
+                    new ForgeConfigManager().getVineableLimit(),
+                    "vineableLimit");
+            case "exhaustionPerBlock" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.DOUBLE,
+                    new ForgeConfigManager().getExhaustionPerBlock(),
+                    "exhaustionPerBlock");
+            case "heightAbove" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.INT,
+                    new ForgeConfigManager().getHeightAbove(),
+                    "heightAbove");
+            case "heightBelow" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.INT,
+                    new ForgeConfigManager().getHeightBelow(),
+                    "heightBelow");
+            case "widthLeft" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.INT,
+                    new ForgeConfigManager().getWidthLeft(),
+                    "widthLeft");
+            case "widthRight" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.INT,
+                    new ForgeConfigManager().getWidthRight(),
+                    "widthRight");
+            case "layerOffset" ->
+                syncConfigWithServer(
+                    ConfigSyncPacket.ConfigType.INT,
+                    new ForgeConfigManager().getLayerOffset(),
+                    "layerOffset");
             default -> {
-              // For other config types, just trigger a general sync
-              // This could be enhanced to handle specific sync types
+              // Unknown config type - log for debugging
+              System.out.println("Unknown config type: " + configType);
             }
           }
         });
