@@ -5,6 +5,8 @@ import static com.ael.viner.forge.VinerForge.MOD_ID;
 import com.ael.viner.forge.VinerForge;
 import com.ael.viner.forge.gui.ConfigScreen;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
+import com.ael.viner.forge.network.VinerPacketHandler;
+import com.ael.viner.forge.network.packets.VinerKeyPressedPacket;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -12,7 +14,7 @@ import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import org.apache.logging.log4j.LogManager;
@@ -85,8 +87,8 @@ class ClientGameplayEventHandler {
     }
     if (ClientEventHandler.VINE_KEY_BINDING.isDown() != vineKeyPressed) {
       vineKeyPressed = ClientEventHandler.VINE_KEY_BINDING.isDown();
-      com.ael.viner.forge.network.VinerPacketHandler.INSTANCE.sendToServer(
-          new com.ael.viner.forge.network.packets.VinerKeyPressedPacket(vineKeyPressed));
+      VinerPacketHandler.INSTANCE.sendToServer(
+          new VinerKeyPressedPacket(vineKeyPressed));
     }
   }
 
@@ -104,7 +106,7 @@ class ClientGameplayEventHandler {
   public static void onMouseScrolled(InputEvent.MouseScrollingEvent event) {
     Minecraft mc = Minecraft.getInstance();
     if (mc.level == null || mc.player == null) return;
-    double scrollDelta = event.getScrollDelta();
+    double scrollDelta = event.getDeltaY();
     if (scrollDelta != 0 && ClientEventHandler.VINE_KEY_BINDING.isDown()) {
       // Placeholder for future scroll packet
     }

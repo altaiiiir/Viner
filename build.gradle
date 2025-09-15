@@ -22,7 +22,7 @@ allprojects {
     version = mod_version
     group = mod_group_id
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
     spotless {
         java {
@@ -44,6 +44,7 @@ allprojects {
 
     // Configure testing
     dependencies {
+        implementation 'org.slf4j:slf4j-api:2.0.16'
         testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
         testImplementation 'org.mockito:mockito-core:5.5.0'
         testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'

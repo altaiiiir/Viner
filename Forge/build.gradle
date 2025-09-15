@@ -15,6 +15,7 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'eventbus.api.strictRuntimeChecks', 'true'
 
             mods {
                 "${mod_id}" {
@@ -49,6 +50,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     implementation project(':Common')
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
     
     // Test dependencies for Forge module
     testImplementation project(':Common')

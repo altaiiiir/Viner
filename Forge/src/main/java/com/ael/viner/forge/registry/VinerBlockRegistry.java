@@ -153,7 +153,7 @@ public class VinerBlockRegistry {
 
   public static ResourceLocation getResourceLocationFromEntry(String entry) {
     String[] splitName = entry.startsWith("#") ? entry.substring(1).split(":") : entry.split(":");
-    return new ResourceLocation(splitName[0], splitName[1]);
+    return ResourceLocation.fromNamespaceAndPath(splitName[0], splitName[1]);
   }
 
   public static TagKey<Block> getTagKeyEntry(String entry) {

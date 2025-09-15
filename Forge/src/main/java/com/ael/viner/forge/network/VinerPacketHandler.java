@@ -7,9 +7,10 @@ import com.ael.viner.forge.network.packets.VeinMiningPacket;
 import com.ael.viner.forge.network.packets.VinerKeyPressedPacket;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.network.SimpleChannel;
 
 /** Handles packet registration and networking channel setup for the Viner mod. */
 public class VinerPacketHandler {
@@ -17,12 +18,16 @@ public class VinerPacketHandler {
   private static final String PROTOCOL_VERSION = "1";
 
   /** Networking channel instance for sending and receiving packets. */
-  public static final SimpleChannel INSTANCE =
-      NetworkRegistry.newSimpleChannel(
-          new ResourceLocation(VinerForge.MOD_ID, "main"),
-          () -> PROTOCOL_VERSION,
-          PROTOCOL_VERSION::equals,
-          PROTOCOL_VERSION::equals);
+  public static final SimpleChannel INSTANCE = ChannelBuilder
+    .named(ResourceLocation.fromNamespaceAndPath(VinerForge.MOD_ID, "main"))
+    .networkProtocolVersion(Integer.parseInt(PROTOCOL_VERSION))
+    .simpleChannel();
+  // public static final SimpleChannel INSTANCE =
+  //     NetworkRegistry.newSimpleChannel(
+  //         new ResourceLocation(VinerForge.MOD_ID, "main"),
+  //         () -> PROTOCOL_VERSION,
+  //         PROTOCOL_VERSION::equals,
+  //         PROTOCOL_VERSION::equals);
 
   /** Registers all packet classes and their respective handlers. */
   public static void register() {

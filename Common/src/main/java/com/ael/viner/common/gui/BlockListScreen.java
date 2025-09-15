@@ -146,7 +146,7 @@ public class BlockListScreen extends Screen {
 
   @Override
   public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-    this.renderBackground(graphics); // Renders the background
+    this.renderBackground(graphics, mouseX, mouseY, partialTicks); // Renders the background
     super.render(
         graphics,
         mouseX,

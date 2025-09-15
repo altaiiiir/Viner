@@ -4,7 +4,7 @@ import com.ael.viner.forge.VinerForge;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.ael.viner.forge.registry.VinerPlayerRegistry;
 import java.util.Objects;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;

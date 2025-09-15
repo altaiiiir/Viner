@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
@@ -79,7 +80,7 @@ public class MiningUtils {
 
       boolean isIceWithoutSilkTouch =
           level.getBlockState(blockPos).getBlock() == Blocks.ICE
-              && tool.getEnchantmentLevel(Enchantments.SILK_TOUCH) == 0;
+              && !tool.getEnchantments().keySet().contains(Enchantments.SILK_TOUCH);
       level.setBlockAndUpdate(
           blockPos,
           isIceWithoutSilkTouch
@@ -103,9 +104,22 @@ public class MiningUtils {
                   // modifying the original
                 }
 
+
+                /**
+                 * TODO:
+                 * THIS IS WHERE I LAST LEFT OFF ------
+                 * I'M NOW ALMOST DONE FIXING ALL THE MIGRATION. I JUST CANT FIGURE OUT THESE LAST FEW THINGS.
+                 * 
+                 */
+
+
+
+
+
+
                 // Serialize the inventory into the BlockEntity's custom persistent data
                 CompoundTag inventoryTag = new CompoundTag();
-                ContainerHelper.saveAllItems(inventoryTag, inventoryContents, true);
+                ContainerHelper.saveAllItems(inventoryTag, inventoryContents);
                 CompoundTag persistentData =
                     blockEntity.getPersistentData(); // Retrieve custom persistent data
                 persistentData.put(
@@ -121,8 +135,8 @@ public class MiningUtils {
       BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
 
     // Gets current tools enchantments
-    int fortuneLevel = tool.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE);
-    int silkTouchLevel = tool.getEnchantmentLevel(Enchantments.SILK_TOUCH);
+    int fortuneLevel = tool.getEnchantments().entrySet().stream().filter(entry -> entry.getKey() == Enchantments.FORTUNE).findFirst().get().getIntValue();
+    int silkTouchLevel = tool.getEnchantments().entrySet().stream().filter(entry -> entry.getKey() == Enchantments.SILK_TOUCH).findFirst().get().getIntValue();
 
     // Gets the XP expected to drop from a block
     int exp = blockState.getExpDrop(level, level.random, blockPos, fortuneLevel, silkTouchLevel);
@@ -156,7 +170,7 @@ public class MiningUtils {
     // Check if the BlockEntity is an instance of SkulkerBoxBlockEntity
     if (blockEntity instanceof ShulkerBoxBlockEntity) {
       // Save the block entity data, excluding metadata, to a new CompoundTag
-      blockEntityTag = blockEntity.saveWithoutMetadata();
+      blockEntityTag = blockEntity.saveWithoutMetadata(level.registryAccess());
     }
 
     // Use the block's loot table to determine the items to drop, considering the
@@ -430,7 +444,7 @@ public class MiningUtils {
           vinerData.getVineableTagIds(),
           tagId -> {
             TagKey<Block> tagKey =
-                TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(tagId));
+                TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(tagId, "main"));
             var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
 
             return tagBlocks.stream()
@@ -457,7 +471,7 @@ public class MiningUtils {
           vinerData.getUnvineableTagIds(),
           tagId -> {
             TagKey<Block> tagKey =
-                TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(tagId));
+                TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(tagId, "main"));
             var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
 
             return tagBlocks.stream()
@@ -475,7 +489,7 @@ public class MiningUtils {
    * @return The level of the Unbreaking enchantment, or 0 if not present.
    */
   public static int getUnbreakingLevel(ItemStack tool) {
-    return EnchantmentHelper.getTagEnchantmentLevel(Enchantments.UNBREAKING, tool);
+    return tool.getEnchantments().entrySet().stream().filter(entry -> entry.getKey() == Enchantments.UNBREAKING).findFirst().get().getIntValue();
   }
 
   /**

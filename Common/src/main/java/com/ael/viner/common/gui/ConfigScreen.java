@@ -2,6 +2,8 @@ package com.ael.viner.common.gui;
 
 import com.ael.viner.common.config.IConfigManager;
 import com.mojang.logging.LogUtils;
+
+import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
@@ -9,7 +11,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Style;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.slf4j.Logger;
 
 /**
@@ -311,7 +318,7 @@ public class ConfigScreen extends Screen {
 
   @Override
   public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-    this.renderBackground(graphics); // Renders the background
+    this.renderBackground(graphics, mouseX, mouseY, partialTicks); // Renders the background
     super.render(graphics, mouseX, mouseY, partialTicks); // Renders widgets
 
     renderTooltips(graphics, mouseX - 60, mouseY - 10);
@@ -321,98 +328,187 @@ public class ConfigScreen extends Screen {
     graphics.drawString(this.font, this.title, (this.width - titleWidth) / 2, 15, 0xFFFFFF);
   }
 
+
+  // Create Positioner
+  ScreenRectangle s = new ScreenRectangle(0, 0, 0, 0);
+  MenuTooltipPositioner positioner = new MenuTooltipPositioner(s);
+
   private void renderTooltips(@Nonnull GuiGraphics graphics, int mouseX, int mouseY) {
     // Vineable Block List Button Tooltip
     if (vineableBlockListButton.isHoveredOrFocused()) {
+
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Configure which blocks can be vined together.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Configure which blocks can be vined together."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Non-Vineable Block List Button Tooltip
     if (nonVineableBlockListButton.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Configure which blocks cannot be vined.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
-          this.font, Component.literal("Configure which blocks cannot be vined."), mouseX, mouseY);
+          this.font,
+          List.of(ClientTooltipComponent.create(text)),
+          mouseX,
+          mouseY,
+          positioner,
+          null);
     }
 
     // Shape Vine Button Tooltip
     if (shapeVineButton.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Enables shape-based vining with custom dimensions.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Enables shape-based vining with custom dimensions."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Vine All Button Tooltip
     if (vineAllButton.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "When enabled, vines all connected blocks regardless of type.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("When enabled, vines all connected blocks regardless of type."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Height Below Field Tooltip
     if (heightBelowField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Sets the vine growth limit below the source block.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Sets the vine growth limit below the source block."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Height Above Field Tooltip
     if (heightAboveField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Sets the vine growth limit above the source block.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Sets the vine growth limit above the source block."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Width Left Field Tooltip
     if (widthLeftField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Sets the vine growth limit left of the source block.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Sets the vine growth limit left of the source block."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Width Right Field Tooltip
     if (widthRightField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Sets the vine growth limit right of the source block.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Sets the vine growth limit right of the source block."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Layer Offset Field Tooltip
     if (layerOffsetField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Adjusts the vertical offset between each shape vined layer.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Adjusts the vertical offset between each shape vined layer."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Vineable Limit Field Tooltip
     if (vineableLimitField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Limits the number of blocks that can be vineable.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
           this.font,
-          Component.literal("Limits the number of blocks that can be vineable."),
+          List.of(ClientTooltipComponent.create(text)),
           mouseX,
-          mouseY);
+          mouseY,
+          positioner,
+          null);
     }
 
     // Exhaustion Per Block Field Tooltip
     if (exhaustionPerBlockField.isHoveredOrFocused()) {
+      FormattedCharSequence text = FormattedCharSequence.forward(
+          "Sets the hunger rate per vined block.", 
+          Style.EMPTY
+      );
+      
       graphics.renderTooltip(
-          this.font, Component.literal("Sets the hunger rate per vined block."), mouseX, mouseY);
+          this.font,
+          List.of(ClientTooltipComponent.create(text)),
+          mouseX,
+          mouseY,
+          positioner,
+          null);
     }
   }
 
