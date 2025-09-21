@@ -1,7 +1,5 @@
 package com.ael.viner.forge;
 
-import java.lang.invoke.MethodHandles;
-
 import com.ael.viner.common.IPlayerRegistry;
 import com.ael.viner.common.IVinerMod;
 import com.ael.viner.common.VinerCore;
@@ -11,6 +9,7 @@ import com.ael.viner.forge.config.ForgeConfigManager;
 import com.ael.viner.forge.network.VinerPacketHandler;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.ael.viner.forge.registry.VinerPlayerRegistry;
+import java.lang.invoke.MethodHandles;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;

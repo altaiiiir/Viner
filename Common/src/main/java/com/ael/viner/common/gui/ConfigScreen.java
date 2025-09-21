@@ -2,7 +2,6 @@ package com.ael.viner.common.gui;
 
 import com.ael.viner.common.config.IConfigManager;
 import com.mojang.logging.LogUtils;
-
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
@@ -10,13 +9,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.Style;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.util.FormattedCharSequence;
 import org.slf4j.Logger;
 
 /**
@@ -328,7 +327,6 @@ public class ConfigScreen extends Screen {
     graphics.drawString(this.font, this.title, (this.width - titleWidth) / 2, 15, 0xFFFFFF);
   }
 
-
   // Create Positioner
   ScreenRectangle s = new ScreenRectangle(0, 0, 0, 0);
   MenuTooltipPositioner positioner = new MenuTooltipPositioner(s);
@@ -337,11 +335,10 @@ public class ConfigScreen extends Screen {
     // Vineable Block List Button Tooltip
     if (vineableBlockListButton.isHoveredOrFocused()) {
 
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Configure which blocks can be vined together.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Configure which blocks can be vined together.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -353,11 +350,9 @@ public class ConfigScreen extends Screen {
 
     // Non-Vineable Block List Button Tooltip
     if (nonVineableBlockListButton.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Configure which blocks cannot be vined.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward("Configure which blocks cannot be vined.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -369,11 +364,10 @@ public class ConfigScreen extends Screen {
 
     // Shape Vine Button Tooltip
     if (shapeVineButton.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Enables shape-based vining with custom dimensions.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Enables shape-based vining with custom dimensions.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -385,11 +379,10 @@ public class ConfigScreen extends Screen {
 
     // Vine All Button Tooltip
     if (vineAllButton.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "When enabled, vines all connected blocks regardless of type.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "When enabled, vines all connected blocks regardless of type.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -401,11 +394,10 @@ public class ConfigScreen extends Screen {
 
     // Height Below Field Tooltip
     if (heightBelowField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Sets the vine growth limit below the source block.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Sets the vine growth limit below the source block.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -417,11 +409,10 @@ public class ConfigScreen extends Screen {
 
     // Height Above Field Tooltip
     if (heightAboveField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Sets the vine growth limit above the source block.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Sets the vine growth limit above the source block.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -433,11 +424,10 @@ public class ConfigScreen extends Screen {
 
     // Width Left Field Tooltip
     if (widthLeftField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Sets the vine growth limit left of the source block.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Sets the vine growth limit left of the source block.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -449,11 +439,10 @@ public class ConfigScreen extends Screen {
 
     // Width Right Field Tooltip
     if (widthRightField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Sets the vine growth limit right of the source block.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Sets the vine growth limit right of the source block.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -465,11 +454,10 @@ public class ConfigScreen extends Screen {
 
     // Layer Offset Field Tooltip
     if (layerOffsetField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Adjusts the vertical offset between each shape vined layer.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Adjusts the vertical offset between each shape vined layer.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -481,11 +469,10 @@ public class ConfigScreen extends Screen {
 
     // Vineable Limit Field Tooltip
     if (vineableLimitField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Limits the number of blocks that can be vineable.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward(
+              "Limits the number of blocks that can be vineable.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),
@@ -497,11 +484,9 @@ public class ConfigScreen extends Screen {
 
     // Exhaustion Per Block Field Tooltip
     if (exhaustionPerBlockField.isHoveredOrFocused()) {
-      FormattedCharSequence text = FormattedCharSequence.forward(
-          "Sets the hunger rate per vined block.", 
-          Style.EMPTY
-      );
-      
+      FormattedCharSequence text =
+          FormattedCharSequence.forward("Sets the hunger rate per vined block.", Style.EMPTY);
+
       graphics.renderTooltip(
           this.font,
           List.of(ClientTooltipComponent.create(text)),

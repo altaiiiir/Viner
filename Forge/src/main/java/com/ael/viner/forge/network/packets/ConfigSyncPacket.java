@@ -3,150 +3,17 @@ package com.ael.viner.forge.network.packets;
 import com.ael.viner.common.VinerCore;
 import com.ael.viner.forge.network.VinerPacketHandler;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
-public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData> {
+public final class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData> {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public static final PacketFactory<ConfigSyncPacket> FACTORY =
-      buf -> {
-        ConfigType type = ConfigType.values()[buf.readInt()];
-        Object value =
-            switch (type) {
-              case BOOLEAN -> buf.readBoolean();
-              case DOUBLE -> buf.readDouble();
-              case INT -> buf.readInt();
-              case BLOCK_LIST -> buf.readCollection(ArrayList::new, FriendlyByteBuf::readUtf);
-            };
-        String configName = buf.readUtf();
-        return new ConfigSyncPacket(new ConfigData(type, value, configName));
-      };
-
-  public ConfigSyncPacket(ConfigData data) {
-    super(data);
-  }
-
-  public static void encode(ConfigSyncPacket msg, FriendlyByteBuf buf) {
-    ConfigData data = msg.getData();
-    buf.writeInt(data.type().ordinal());
-    switch (data.type()) {
-      case BOOLEAN -> buf.writeBoolean((Boolean) data.value());
-      case DOUBLE -> buf.writeDouble((Double) data.value());
-      case INT -> buf.writeInt((Integer) data.value());
-      case BLOCK_LIST -> {
-        Object value = data.value();
-        @SuppressWarnings("unchecked")
-        List<String> list = (List<String>) value;
-        buf.writeCollection(list, FriendlyByteBuf::writeUtf);
-      }
-    }
-    buf.writeUtf(data.configName() != null ? data.configName() : "");
-  }
-
-  public static void syncConfigWithServer(ConfigType type, Object value, String configName) {
-    ConfigSyncPacket packet =
-        new ConfigSyncPacket(new ConfigSyncPacket.ConfigData(type, value, configName));
-    VinerPacketHandler.INSTANCE.sendToServer(packet);
-  }
-
-  @Override
-  public void handle(AbstractPacket<ConfigData> msg, @NotNull Supplier<NetworkEvent.Context> ctx) {
-    ServerPlayer player = ctx.get().getSender();
-    if (player == null) return; // for single player
-
-    LOGGER.info(
-        "Received config packet for {} with type {} and value {}",
-        msg.getData().configName(),
-        msg.getData().type(),
-        msg.getData().value());
-
-    if ("vineAll".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.BOOLEAN) {
-      VinerCore.getPlayerRegistry().setVineAllEnabled(player, (Boolean) msg.getData().value());
-      LOGGER.info(
-          "Updated vineAll to {} for player {}",
-          msg.getData().value(),
-          player.getName().getString());
-    } else if ("vineableLimit".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.INT) {
-      VinerCore.getPlayerRegistry().setVineableLimit(player, (Integer) msg.getData().value());
-      LOGGER.info(
-          "Updated vineableLimit to {} for player {}",
-          msg.getData().value(),
-          player.getName().getString());
-    } else if ("exhaustionPerBlock".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.DOUBLE) {
-      VinerCore.getPlayerRegistry().setExhaustionPerBlock(player, (Double) msg.getData().value());
-    } else if ("heightAbove".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.INT) {
-      VinerCore.getPlayerRegistry().setHeightAbove(player, (Integer) msg.getData().value());
-    } else if ("heightBelow".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.INT) {
-      VinerCore.getPlayerRegistry().setHeightBelow(player, (Integer) msg.getData().value());
-    } else if ("widthLeft".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.INT) {
-      VinerCore.getPlayerRegistry().setWidthLeft(player, (Integer) msg.getData().value());
-    } else if ("widthRight".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.INT) {
-      VinerCore.getPlayerRegistry().setWidthRight(player, (Integer) msg.getData().value());
-    } else if ("layerOffset".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.INT) {
-      VinerCore.getPlayerRegistry().setLayerOffset(player, (Integer) msg.getData().value());
-    } else if ("shapeVine".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.BOOLEAN) {
-      VinerCore.getPlayerRegistry().setShapeVine(player, (Boolean) msg.getData().value());
-    } else if ("vineableBlocks".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.BLOCK_LIST) {
-      Object value = msg.getData().value();
-      List<String> entries;
-      if (value instanceof List<?> list) {
-        entries =
-            list.stream().allMatch(e -> e instanceof String)
-                ? list.stream().map(e -> (String) e).collect(Collectors.toList())
-                : List.of();
-      } else {
-        entries = List.of();
-      }
-      LOGGER.info(
-          "Setting vineableBlocks for player {} to {} entries",
-          player.getName().getString(),
-          entries.size());
-      VinerCore.getPlayerRegistry().setVineableBlocks(player, entries);
-      VinerCore.getPlayerRegistry().setVineableTags(player, entries);
-      VinerBlockRegistry.setup();
-    } else if ("unvineableBlocks".equals(msg.getData().configName())
-        && msg.getData().type() == ConfigType.BLOCK_LIST) {
-      Object value = msg.getData().value();
-      List<String> entries;
-      if (value instanceof List<?> list) {
-        entries =
-            list.stream().allMatch(e -> e instanceof String)
-                ? list.stream().map(e -> (String) e).collect(Collectors.toList())
-                : List.of();
-      } else {
-        entries = List.of();
-      }
-      LOGGER.info(
-          "Setting unvineableBlocks for player {} to {} entries",
-          player.getName().getString(),
-          entries.size());
-      VinerCore.getPlayerRegistry().setUnvineableBlocks(player, entries);
-      VinerCore.getPlayerRegistry().setUnvineableTags(player, entries);
-      VinerBlockRegistry.setup();
-    }
-
-    ctx.get().setPacketHandled(true);
-  }
-
+  // ----- data model -----
   public enum ConfigType {
     BOOLEAN,
     DOUBLE,
@@ -155,4 +22,110 @@ public class ConfigSyncPacket extends AbstractPacket<ConfigSyncPacket.ConfigData
   }
 
   public record ConfigData(ConfigType type, Object value, String configName) {}
+
+  public ConfigSyncPacket(ConfigData data) {
+    super(data);
+  }
+
+  // ----- codec -----
+  public static void encode(ConfigSyncPacket msg, FriendlyByteBuf buf) {
+    var d = msg.data();
+    buf.writeInt(d.type().ordinal());
+    switch (d.type()) {
+      case BOOLEAN -> buf.writeBoolean((Boolean) d.value());
+      case DOUBLE -> buf.writeDouble((Double) d.value());
+      case INT -> buf.writeInt((Integer) d.value());
+      case BLOCK_LIST -> {
+        @SuppressWarnings("unchecked")
+        List<String> list = (List<String>) d.value();
+        buf.writeCollection(list, (FriendlyByteBuf b, String s) -> b.writeUtf(s));
+      }
+    }
+    buf.writeUtf(d.configName() != null ? d.configName() : "");
+  }
+
+  public static ConfigSyncPacket decode(FriendlyByteBuf buf) {
+    var type = ConfigType.values()[buf.readInt()];
+    Object value =
+        switch (type) {
+          case BOOLEAN -> buf.readBoolean();
+          case DOUBLE -> buf.readDouble();
+          case INT -> buf.readInt();
+          case BLOCK_LIST -> buf.readList((FriendlyByteBuf b) -> b.readUtf());
+        };
+    String name = buf.readUtf();
+    return new ConfigSyncPacket(new ConfigData(type, value, name));
+  }
+
+  // ----- client -> server send helper -----
+  public static void syncConfigWithServer(ConfigType type, Object value, String configName) {
+    VinerPacketHandler.sendToServer(new ConfigSyncPacket(new ConfigData(type, value, configName)));
+  }
+
+  // ----- server-side handler -----
+  @Override
+  public void handle(CustomPayloadEvent.Context ctx) {
+    var player = ctx.getSender();
+    if (player == null) {
+      ctx.setPacketHandled(true);
+      return;
+    }
+
+    var d = data();
+    var name = d.configName();
+    LOGGER.info("Received config packet: {} = {} ({})", name, d.value(), d.type());
+
+    switch (d.type()) {
+      case BOOLEAN -> {
+        boolean v = (Boolean) d.value();
+        if ("vineAll".equals(name)) {
+          VinerCore.getPlayerRegistry().setVineAllEnabled(player, v);
+        } else if ("shapeVine".equals(name)) {
+          VinerCore.getPlayerRegistry().setShapeVine(player, v);
+        }
+      }
+      case DOUBLE -> {
+        double v = (Double) d.value();
+        if ("exhaustionPerBlock".equals(name)) {
+          VinerCore.getPlayerRegistry().setExhaustionPerBlock(player, v);
+        }
+      }
+      case INT -> {
+        int v = (Integer) d.value();
+        var reg = VinerCore.getPlayerRegistry();
+        switch (name) {
+          case "vineableLimit" -> reg.setVineableLimit(player, v);
+          case "heightAbove" -> reg.setHeightAbove(player, v);
+          case "heightBelow" -> reg.setHeightBelow(player, v);
+          case "widthLeft" -> reg.setWidthLeft(player, v);
+          case "widthRight" -> reg.setWidthRight(player, v);
+          case "layerOffset" -> reg.setLayerOffset(player, v);
+        }
+      }
+      case BLOCK_LIST -> {
+        // @SuppressWarnings("unchecked")
+        List<String> entriesRaw =
+            (d.value() instanceof List<?> l)
+                ? (List<String>)
+                    l.stream()
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast)
+                        .collect(Collectors.toList())
+                : List.of();
+
+        var reg = VinerCore.getPlayerRegistry();
+        if ("vineableBlocks".equals(name)) {
+          reg.setVineableBlocks(player, entriesRaw);
+          reg.setVineableTags(player, entriesRaw);
+          VinerBlockRegistry.setup();
+        } else if ("unvineableBlocks".equals(name)) {
+          reg.setUnvineableBlocks(player, entriesRaw);
+          reg.setUnvineableTags(player, entriesRaw);
+          VinerBlockRegistry.setup();
+        }
+      }
+    }
+
+    ctx.setPacketHandled(true);
+  }
 }

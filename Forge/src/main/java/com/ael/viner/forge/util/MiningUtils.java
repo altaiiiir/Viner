@@ -13,18 +13,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,53 +93,56 @@ public class MiningUtils {
   }
 
   private static void protectStorage(Level level, BlockPos blockPos) {
-    BlockEntity blockEntity = level.getBlockEntity(blockPos);
-    if (blockEntity != null) {
-      blockEntity
-          .getCapability(ForgeCapabilities.ITEM_HANDLER)
-          .ifPresent(
-              itemHandler -> {
-                NonNullList<ItemStack> inventoryContents =
-                    NonNullList.withSize(itemHandler.getSlots(), ItemStack.EMPTY);
-                for (int i = 0; i < itemHandler.getSlots(); i++) {
-                  inventoryContents.set(
-                      i, itemHandler.getStackInSlot(i).copy()); // Make a copy of the stack to avoid
-                  // modifying the original
-                }
+    BlockEntity be = level.getBlockEntity(blockPos);
+    if (be == null) return;
 
+    be.getCapability(ForgeCapabilities.ITEM_HANDLER)
+        .ifPresent(
+            handler -> {
+              // Copy items
+              NonNullList<ItemStack> contents =
+                  NonNullList.withSize(handler.getSlots(), ItemStack.EMPTY);
+              for (int i = 0; i < handler.getSlots(); i++)
+                contents.set(i, handler.getStackInSlot(i).copy());
+              // TODO: REVIEW THIS CODE
+              // Serialize via ValueOutput (1.21+)
+              TagValueOutput out =
+                  TagValueOutput.createWithContext(
+                      ProblemReporter.DISCARDING, level.registryAccess());
+              ContainerHelper.saveAllItems(out, contents);
 
-                /**
-                 * TODO:
-                 * THIS IS WHERE I LAST LEFT OFF ------
-                 * I'M NOW ALMOST DONE FIXING ALL THE MIGRATION. I JUST CANT FIGURE OUT THESE LAST FEW THINGS.
-                 * 
-                 */
+              // Put BE data onto the dropped BlockItem
+              BlockState state = level.getBlockState(blockPos);
+              ItemStack drop = new ItemStack(state.getBlock());
+              BlockItem.setBlockEntityData(drop, be.getType(), out);
+              Block.popResource(level, blockPos, drop); // spawn the custom drop
 
+              // Optional: clear the original inventory to avoid dupes (if modifiable)
+              if (handler instanceof IItemHandlerModifiable mod) {
+                for (int i = 0; i < mod.getSlots(); i++) mod.setStackInSlot(i, ItemStack.EMPTY);
+              }
 
-
-
-
-
-                // Serialize the inventory into the BlockEntity's custom persistent data
-                CompoundTag inventoryTag = new CompoundTag();
-                ContainerHelper.saveAllItems(inventoryTag, inventoryContents);
-                CompoundTag persistentData =
-                    blockEntity.getPersistentData(); // Retrieve custom persistent data
-                persistentData.put(
-                    "Items", inventoryTag.getList("Items", 10)); // Store inventory data
-
-                // Ensure the BlockEntity knows it has changed
-                blockEntity.setChanged();
-              });
-    }
+              be.setChanged();
+              // NOTE: Caller should cancel/suppress the block’s default drops in the break hook.
+            });
   }
 
   private static void spawnExp(
       BlockState blockState, ServerLevel level, BlockPos blockPos, ItemStack tool) {
 
     // Gets current tools enchantments
-    int fortuneLevel = tool.getEnchantments().entrySet().stream().filter(entry -> entry.getKey() == Enchantments.FORTUNE).findFirst().get().getIntValue();
-    int silkTouchLevel = tool.getEnchantments().entrySet().stream().filter(entry -> entry.getKey() == Enchantments.SILK_TOUCH).findFirst().get().getIntValue();
+    int fortuneLevel =
+        tool.getEnchantments().entrySet().stream()
+            .filter(entry -> entry.getKey() == Enchantments.FORTUNE)
+            .findFirst()
+            .get()
+            .getIntValue();
+    int silkTouchLevel =
+        tool.getEnchantments().entrySet().stream()
+            .filter(entry -> entry.getKey() == Enchantments.SILK_TOUCH)
+            .findFirst()
+            .get()
+            .getIntValue();
 
     // Gets the XP expected to drop from a block
     int exp = blockState.getExpDrop(level, level.random, blockPos, fortuneLevel, silkTouchLevel);
@@ -185,9 +191,7 @@ public class MiningUtils {
       if (blockEntityTag != null
           && item.getItem() instanceof BlockItem
           && ((BlockItem) item.getItem()).getBlock() instanceof ShulkerBoxBlock) {
-        CompoundTag itemTag = item.getOrCreateTag();
-        itemTag.put("BlockEntityTag", blockEntityTag);
-        item.setTag(itemTag);
+        item.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(blockEntityTag));
       }
 
       // Calculate random offset for drop position
@@ -444,7 +448,9 @@ public class MiningUtils {
           vinerData.getVineableTagIds(),
           tagId -> {
             TagKey<Block> tagKey =
-                TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(tagId, "main"));
+                TagKey.create(
+                    ForgeRegistries.BLOCKS.getRegistryKey(),
+                    ResourceLocation.fromNamespaceAndPath(tagId, "main"));
             var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
 
             return tagBlocks.stream()
@@ -471,7 +477,9 @@ public class MiningUtils {
           vinerData.getUnvineableTagIds(),
           tagId -> {
             TagKey<Block> tagKey =
-                TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(tagId, "main"));
+                TagKey.create(
+                    ForgeRegistries.BLOCKS.getRegistryKey(),
+                    ResourceLocation.fromNamespaceAndPath(tagId, "main"));
             var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
 
             return tagBlocks.stream()
@@ -489,7 +497,11 @@ public class MiningUtils {
    * @return The level of the Unbreaking enchantment, or 0 if not present.
    */
   public static int getUnbreakingLevel(ItemStack tool) {
-    return tool.getEnchantments().entrySet().stream().filter(entry -> entry.getKey() == Enchantments.UNBREAKING).findFirst().get().getIntValue();
+    return tool.getEnchantments().entrySet().stream()
+        .filter(entry -> entry.getKey() == Enchantments.UNBREAKING)
+        .findFirst()
+        .get()
+        .getIntValue();
   }
 
   /**

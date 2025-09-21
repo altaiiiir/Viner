@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,8 +62,7 @@ public class PlayerEventHandler {
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.BLOCK_LIST, vineableBlocks, "vineableBlocks"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), vineableBlocksPacket);
+    VinerPacketHandler.sendTo(serverPlayer, vineableBlocksPacket);
 
     List<String> unvineableBlocks =
         VinerBlockRegistry.getUnvineableBlocks().stream()
@@ -74,79 +72,69 @@ public class PlayerEventHandler {
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.BLOCK_LIST, unvineableBlocks, "unvineableBlocks"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), unvineableBlocksPacket);
+    VinerPacketHandler.sendTo(serverPlayer, unvineableBlocksPacket);
 
     boolean vineAllEnabled = VinerBlockRegistry.isVineAll();
     ConfigSyncPacket vineAllPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.BOOLEAN, vineAllEnabled, "vineAll"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), vineAllPacket);
+    VinerPacketHandler.sendTo(serverPlayer, vineAllPacket);
 
     double exhaustionPerBlock = VinerBlockRegistry.getExhaustionPerBlock();
     ConfigSyncPacket exhaustionPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.DOUBLE, exhaustionPerBlock, "exhaustionPerBlock"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), exhaustionPacket);
+    VinerPacketHandler.sendTo(serverPlayer, exhaustionPacket);
 
     int vineableLimit = VinerBlockRegistry.getVineableLimit();
     ConfigSyncPacket vineableLimitPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.INT, vineableLimit, "vineableLimit"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), vineableLimitPacket);
+    VinerPacketHandler.sendTo(serverPlayer, vineableLimitPacket);
 
     int heightAbove = VinerBlockRegistry.getHeightAbove();
     ConfigSyncPacket heightAbovePacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.INT, heightAbove, "heightAbove"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), heightAbovePacket);
+    VinerPacketHandler.sendTo(serverPlayer, heightAbovePacket);
 
     int heightBelow = VinerBlockRegistry.getHeightBelow();
     ConfigSyncPacket heightBelowPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.INT, heightBelow, "heightBelow"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), heightBelowPacket);
+    VinerPacketHandler.sendTo(serverPlayer, heightBelowPacket);
 
     int widthLeft = VinerBlockRegistry.getWidthLeft();
     ConfigSyncPacket widthLeftPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.INT, widthLeft, "widthLeft"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), widthLeftPacket);
+    VinerPacketHandler.sendTo(serverPlayer, widthLeftPacket);
 
     int widthRight = VinerBlockRegistry.getWidthRight();
     ConfigSyncPacket widthRightPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.INT, widthRight, "widthRight"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), widthRightPacket);
+    VinerPacketHandler.sendTo(serverPlayer, widthRightPacket);
 
     int layerOffset = VinerBlockRegistry.getLayerOffset();
     ConfigSyncPacket layerOffsetPacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.INT, layerOffset, "layerOffset"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), layerOffsetPacket);
+    VinerPacketHandler.sendTo(serverPlayer, layerOffsetPacket);
 
     Boolean shapeVine = VinerBlockRegistry.isShapeVine();
     ConfigSyncPacket shapeVinePacket =
         new ConfigSyncPacket(
             new ConfigSyncPacket.ConfigData(
                 ConfigSyncPacket.ConfigType.BOOLEAN, shapeVine, "shapeVine"));
-    VinerPacketHandler.INSTANCE.send(
-        PacketDistributor.PLAYER.with(() -> serverPlayer), shapeVinePacket);
+    VinerPacketHandler.sendTo(serverPlayer, shapeVinePacket);
   }
 }
