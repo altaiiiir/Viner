@@ -3,7 +3,7 @@ package com.ael.viner.forge.event;
 import static com.ael.viner.forge.VinerForge.MOD_ID;
 
 import com.ael.viner.forge.VinerForge;
-import com.ael.viner.forge.gui.ConfigScreen;
+import com.ael.viner.forge.gui.ForgeConfigScreen;
 import com.ael.viner.forge.network.VinerPacketHandler;
 import com.ael.viner.forge.network.packets.VinerKeyPressedPacket;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
@@ -93,11 +93,9 @@ class ClientGameplayEventHandler {
 
   @SubscribeEvent
   public static void onClientTickConfig(TickEvent.ClientTickEvent event) {
-    if (event.phase == TickEvent.Phase.START) {
-      Minecraft mc = Minecraft.getInstance();
-      if (mc.screen == null && ClientEventHandler.VINER_CONFIG_KEY_BINDING.isDown()) {
-        mc.setScreen(new ConfigScreen());
-      }
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.screen == null && ClientEventHandler.VINER_CONFIG_KEY_BINDING.isDown()) {
+      mc.setScreen(new ForgeConfigScreen());
     }
   }
 

@@ -507,4 +507,68 @@ public class ConfigScreen extends Screen {
   public boolean isPauseScreen() {
     return false;
   }
+  
+  // Composition support methods for cross-module usage
+  
+  /**
+   * Initialize the screen with custom dimensions and widget registration.
+   * Used when this screen is composed within another screen.
+   */
+  public void initScreen(int width, int height, java.util.function.Consumer<Object> widgetAdder, Runnable closeHandler, Object minecraft, Object font) {
+    this.width = width;
+    this.height = height;
+    this.minecraft = (net.minecraft.client.Minecraft) minecraft;
+    this.font = (net.minecraft.client.gui.Font) font;
+    // closeHandler assignment removed - no longer needed
+    
+    // Clear any existing renderables (in case of re-init)
+    this.renderables.clear();
+    this.children().clear();
+    
+    init();
+    
+    // Register all widgets with the parent screen
+    this.renderables.forEach(widgetAdder);
+  }
+  
+  /**
+   * Render the screen content. Used when this screen is composed within another screen.
+   */
+  public void renderScreen(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    // Render background
+    this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+    
+    // Render title
+    guiGraphics.drawCenteredString(
+        this.font, 
+        this.title, 
+        this.width / 2, 
+        20, 
+        0xFFFFFF);
+    
+    // Render all widgets (they're already added via initScreen)
+    super.render(guiGraphics, mouseX, mouseY, partialTick);
+  }
+  
+  /**
+   * Handle key press events. Used when this screen is composed within another screen.
+   */
+  public boolean handleKeyPressed(int keyCode, int scanCode, int modifiers) {
+    return super.keyPressed(keyCode, scanCode, modifiers);
+  }
+  
+  /**
+   * Handle mouse click events. Used when this screen is composed within another screen.
+   */
+  public boolean handleMouseClicked(double mouseX, double mouseY, int button) {
+    return super.mouseClicked(mouseX, mouseY, button);
+  }
+  
+  /**
+   * Apply configuration changes. Can be called externally.
+   */
+  public void applyChanges() {
+    // Apply any pending configuration changes
+    // This method can be overridden by subclasses or called by composition
+  }
 }

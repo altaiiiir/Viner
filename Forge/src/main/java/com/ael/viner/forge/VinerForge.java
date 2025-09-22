@@ -9,8 +9,6 @@ import com.ael.viner.forge.config.ForgeConfigManager;
 import com.ael.viner.forge.network.VinerPacketHandler;
 import com.ael.viner.forge.registry.VinerBlockRegistry;
 import com.ael.viner.forge.registry.VinerPlayerRegistry;
-import java.lang.invoke.MethodHandles;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -46,9 +44,6 @@ public class VinerForge implements IVinerMod {
 
     // Register the commonSetup method for modloading
     FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::onCommonSetup);
-
-    // Register ourselves for server and other game events we are interested in
-    BusGroup.DEFAULT.register(MethodHandles.lookup(), this);
 
     // Register the packet handler for networking
     VinerPacketHandler.register();

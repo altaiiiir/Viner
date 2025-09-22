@@ -1,5 +1,5 @@
 plugins {
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
 }
 
 // Apply Minecraft mappings for Common module to access client classes
@@ -26,6 +26,15 @@ test {
         exceptionFormat = 'full'
         showStandardStreams = true
     }
+}
+
+// Merge the resources and classes into the same directory, because Java expects modules to be in a single directory.
+// And if we have it in multiple we have to do performance intensive hacks like having the UnionFileSystem
+// This will eventually be migrated to ForgeGradle so modders don't need to manually do it. But that is later.
+sourceSets.each {
+    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+    it.output.resourcesDir = dir
+    it.java.destinationDirectory = dir
 }
 
 // Configure jar task

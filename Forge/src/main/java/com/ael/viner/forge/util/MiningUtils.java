@@ -135,14 +135,14 @@ public class MiningUtils {
         tool.getEnchantments().entrySet().stream()
             .filter(entry -> entry.getKey() == Enchantments.FORTUNE)
             .findFirst()
-            .get()
-            .getIntValue();
+            .map(entry -> entry.getIntValue())
+            .orElse(0);
     int silkTouchLevel =
         tool.getEnchantments().entrySet().stream()
             .filter(entry -> entry.getKey() == Enchantments.SILK_TOUCH)
             .findFirst()
-            .get()
-            .getIntValue();
+            .map(entry -> entry.getIntValue())
+            .orElse(0);
 
     // Gets the XP expected to drop from a block
     int exp = blockState.getExpDrop(level, level.random, blockPos, fortuneLevel, silkTouchLevel);
@@ -441,22 +441,25 @@ public class MiningUtils {
   private static boolean blockExistsInVineableTags(Block block, Player player) {
     IPlayerRegistry registry = VinerCore.getPlayerRegistry();
     IPlayerData playerData = registry.getPlayerData(player);
-    String blockId = getBlockId(block);
-    if (playerData instanceof VinerPlayerData vinerData) {
-      return BlockTagUtils.isBlockIdInTags(
-          blockId,
-          vinerData.getVineableTagIds(),
-          tagId -> {
-            TagKey<Block> tagKey =
-                TagKey.create(
-                    ForgeRegistries.BLOCKS.getRegistryKey(),
-                    ResourceLocation.fromNamespaceAndPath(tagId, "main"));
-            var tagBlocks = ForgeRegistries.BLOCKS.tags().getTag(tagKey);
 
-            return tagBlocks.stream()
-                .map(MiningUtils::getBlockId)
-                .collect(java.util.stream.Collectors.toSet());
-          });
+    if (playerData instanceof VinerPlayerData vinerData) {
+      List<String> tagIds = vinerData.getVineableTagIds();
+
+      for (String tagId : tagIds) {
+        try {
+          // Create the tag key and check if block belongs to it using official Forge API
+          TagKey<Block> tagKey =
+              ForgeRegistries.BLOCKS.tags().createTagKey(ResourceLocation.parse(tagId));
+          boolean isInTag = block.builtInRegistryHolder().is(tagKey);
+
+          if (isInTag) {
+            return true; // Found a match
+          }
+        } catch (Exception e) {
+          // Log error but continue checking other tags
+          LOGGER.warn("Failed to check tag '{}': {}", tagId, e.getMessage());
+        }
+      }
     }
     return false;
   }

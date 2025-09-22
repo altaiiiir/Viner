@@ -1,12 +1,9 @@
 package com.ael.viner.forge.config;
 
-import com.ael.viner.forge.VinerForge;
 import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.common.Mod;
 
 /** Configuration class for the Viner mod, defining various settings and their default values. */
-@Mod.EventBusSubscriber(modid = VinerForge.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
 
   /** Builder for creating the configuration specification. */
