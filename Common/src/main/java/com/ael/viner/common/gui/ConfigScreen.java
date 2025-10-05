@@ -89,6 +89,7 @@ public class ConfigScreen extends Screen {
   }
 
   private void addRedirectButtons() {
+    // Row 0: Vineable Block List
     Screen vineableBlockListScreen =
         new BlockListScreen(
             this,
@@ -100,11 +101,15 @@ public class ConfigScreen extends Screen {
             });
     vineableBlockListButton =
         GuiUtils.createRedirectButton(
-            leftColumnX, yStart, boxWidth, 20, "Vineable Block List", vineableBlockListScreen);
+            leftColumnX,
+            yStart + 0 * stepSize,
+            boxWidth,
+            20,
+            "Vineable Block List",
+            vineableBlockListScreen);
     this.addRenderableWidget(vineableBlockListButton);
 
-    yStart += stepSize; // increment starting point along the y-axis
-
+    // Row 1: Non-Vineable Block List
     Screen nonVineableBlockListScreen =
         new BlockListScreen(
             this,
@@ -117,7 +122,7 @@ public class ConfigScreen extends Screen {
     nonVineableBlockListButton =
         GuiUtils.createRedirectButton(
             leftColumnX,
-            yStart,
+            yStart + 1 * stepSize,
             boxWidth,
             20,
             "Non-Vineable Block List",
@@ -126,14 +131,14 @@ public class ConfigScreen extends Screen {
   }
 
   private void addLeftColumnWidgets() {
+    // Row 0: Vineable Block List
     addRedirectButtons();
 
-    yStart += stepSize * 2; // ORIGINAL: blank space after block lists
-
+    // Row 3: Vine All (leave blank rows 2 for spacing)
     vineAllButton =
         GuiUtils.createConfigBooleanButton(
             leftColumnX,
-            yStart,
+            yStart + 3 * stepSize,
             boxWidth,
             20,
             "Vine All",
@@ -145,12 +150,11 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(vineAllButton);
 
-    yStart += stepSize;
-
+    // Row 4: Vineable Limit
     vineableLimitField =
         GuiUtils.createConfigSlider(
             leftColumnX,
-            yStart,
+            yStart + 4 * stepSize,
             boxWidth,
             20,
             0,
@@ -163,16 +167,15 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(vineableLimitField);
 
-    yStart += stepSize;
-
+    // Row 5: Hunger Per Block
     exhaustionPerBlockField =
         GuiUtils.createConfigSlider(
             leftColumnX,
-            yStart,
+            yStart + 5 * stepSize,
             boxWidth,
             20,
             20,
-            "Hunger Per Block", // ORIGINAL: was "Hunger Per Block", not "Exhaustion Per Block"
+            "Hunger Per Block",
             configManager::getExhaustionPerBlock,
             value -> {
               configManager.setExhaustionPerBlock(value);
@@ -182,10 +185,11 @@ public class ConfigScreen extends Screen {
   }
 
   private void addRightColumnWidgets() {
+    // Row 0: Shape Vine
     shapeVineButton =
         GuiUtils.createConfigBooleanButton(
             rightColumnX,
-            yStart,
+            yStart + 0 * stepSize,
             boxWidth,
             20,
             "Shape Vine",
@@ -197,13 +201,11 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(shapeVineButton);
 
-    yStart += stepSize;
-
-    // Height Above Slider
+    // Row 1: Height Above
     heightAboveField =
         GuiUtils.createConfigSlider(
             rightColumnX,
-            yStart,
+            yStart + 1 * stepSize,
             boxWidth,
             20,
             0,
@@ -216,13 +218,11 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(heightAboveField);
 
-    yStart += stepSize;
-
-    // Height Below Slider
+    // Row 2: Height Below
     heightBelowField =
         GuiUtils.createConfigSlider(
             rightColumnX,
-            yStart,
+            yStart + 2 * stepSize,
             boxWidth,
             20,
             0,
@@ -235,13 +235,11 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(heightBelowField);
 
-    yStart += stepSize;
-
-    // Width Left Slider
+    // Row 3: Width Left
     widthLeftField =
         GuiUtils.createConfigSlider(
             rightColumnX,
-            yStart,
+            yStart + 3 * stepSize,
             boxWidth,
             20,
             0,
@@ -254,13 +252,11 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(widthLeftField);
 
-    yStart += stepSize;
-
-    // Width Right Slider
+    // Row 4: Width Right
     widthRightField =
         GuiUtils.createConfigSlider(
             rightColumnX,
-            yStart,
+            yStart + 4 * stepSize,
             boxWidth,
             20,
             0,
@@ -273,13 +269,11 @@ public class ConfigScreen extends Screen {
             });
     this.addRenderableWidget(widthRightField);
 
-    yStart += stepSize;
-
-    // Layer Offset Slider
+    // Row 5: Layer Offset
     layerOffsetField =
         GuiUtils.createConfigSlider(
             rightColumnX,
-            yStart,
+            yStart + 5 * stepSize,
             boxWidth,
             20,
             -64,
@@ -507,66 +501,59 @@ public class ConfigScreen extends Screen {
   public boolean isPauseScreen() {
     return false;
   }
-  
+
   // Composition support methods for cross-module usage
-  
+
   /**
-   * Initialize the screen with custom dimensions and widget registration.
-   * Used when this screen is composed within another screen.
+   * Initialize the screen with custom dimensions and widget registration. Used when this screen is
+   * composed within another screen.
    */
-  public void initScreen(int width, int height, java.util.function.Consumer<Object> widgetAdder, Runnable closeHandler, Object minecraft, Object font) {
+  public void initScreen(
+      int width,
+      int height,
+      java.util.function.Consumer<Object> widgetAdder,
+      Runnable closeHandler,
+      Object minecraft,
+      Object font) {
     this.width = width;
     this.height = height;
     this.minecraft = (net.minecraft.client.Minecraft) minecraft;
     this.font = (net.minecraft.client.gui.Font) font;
     // closeHandler assignment removed - no longer needed
-    
+
     // Clear any existing renderables (in case of re-init)
     this.renderables.clear();
     this.children().clear();
-    
+
     init();
-    
+
     // Register all widgets with the parent screen
     this.renderables.forEach(widgetAdder);
   }
-  
-  /**
-   * Render the screen content. Used when this screen is composed within another screen.
-   */
+
+  /** Render the screen content. Used when this screen is composed within another screen. */
   public void renderScreen(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
     // Render background
     this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
-    
+
     // Render title
-    guiGraphics.drawCenteredString(
-        this.font, 
-        this.title, 
-        this.width / 2, 
-        20, 
-        0xFFFFFF);
-    
+    guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
+
     // Render all widgets (they're already added via initScreen)
     super.render(guiGraphics, mouseX, mouseY, partialTick);
   }
-  
-  /**
-   * Handle key press events. Used when this screen is composed within another screen.
-   */
+
+  /** Handle key press events. Used when this screen is composed within another screen. */
   public boolean handleKeyPressed(int keyCode, int scanCode, int modifiers) {
     return super.keyPressed(keyCode, scanCode, modifiers);
   }
-  
-  /**
-   * Handle mouse click events. Used when this screen is composed within another screen.
-   */
+
+  /** Handle mouse click events. Used when this screen is composed within another screen. */
   public boolean handleMouseClicked(double mouseX, double mouseY, int button) {
     return super.mouseClicked(mouseX, mouseY, button);
   }
-  
-  /**
-   * Apply configuration changes. Can be called externally.
-   */
+
+  /** Apply configuration changes. Can be called externally. */
   public void applyChanges() {
     // Apply any pending configuration changes
     // This method can be overridden by subclasses or called by composition

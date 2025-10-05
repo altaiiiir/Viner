@@ -6,6 +6,7 @@ import com.ael.viner.forge.config.ForgeConfigManager;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
@@ -27,7 +28,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class ForgeConfigScreen extends Screen {
 
   private final ForgeConfigManager configManager;
-  private final Consumer<String> networkSyncCallback;
 
   private int boxWidth, padding, leftColumnX, rightColumnX, yStart, stepSize;
   private Button vineableBlockListButton,
@@ -45,11 +45,6 @@ public class ForgeConfigScreen extends Screen {
   public ForgeConfigScreen() {
     super(Component.translatable("screen.viner.config"));
     this.configManager = new ForgeConfigManager();
-    this.networkSyncCallback =
-        configType -> {
-          // Handle Forge-specific network synchronization
-          System.out.println("Config changed: " + configType);
-        };
   }
 
   @Override
@@ -71,141 +66,135 @@ public class ForgeConfigScreen extends Screen {
   }
 
   private void addConfigurationWidgets() {
-    int row = 0;
-
-    // Vine All Toggle
-    vineAllButton =
-        createToggleButton(
-            leftColumnX,
-            yStart + row * stepSize,
-            "Vine All",
-            configManager::getVineAll,
-            value -> {
-              // Update config and sync
-              networkSyncCallback.accept("vineAll");
-            });
-    addRenderableWidget(vineAllButton);
-
-    // Shape Vine Toggle
+    // Right column rows (explicit placement)
+    // Row 0: Shape Vine
     shapeVineButton =
         createToggleButton(
             rightColumnX,
-            yStart + row * stepSize,
+            yStart + 0 * stepSize,
             "Shape Vine",
             configManager::getShapeVine,
             value -> {
-              networkSyncCallback.accept("shapeVine");
+              configManager.setShapeVine(value);
             });
     addRenderableWidget(shapeVineButton);
 
-    row++;
-
-    // Vineable Limit Slider
-    vineableLimitField =
-        createSlider(
-            leftColumnX,
-            yStart + row * stepSize,
-            "Vineable Limit",
-            configManager.getVineableLimit(),
-            1,
-            500,
-            value -> {
-              networkSyncCallback.accept("vineableLimit");
-            });
-    addRenderableWidget(vineableLimitField);
-
-    // Exhaustion Per Block Slider
-    exhaustionPerBlockField =
-        createSlider(
-            rightColumnX,
-            yStart + row * stepSize,
-            "Hunger Per Block",
-            (int) (configManager.getExhaustionPerBlock() * 100),
-            0,
-            1000,
-            value -> {
-              networkSyncCallback.accept("hungerPerBlock");
-            });
-    addRenderableWidget(exhaustionPerBlockField);
-
-    row++;
-
-    // Height Above Slider
+    // Row 1: Height Above
     heightAboveField =
         createSlider(
-            leftColumnX,
-            yStart + row * stepSize,
+            rightColumnX,
+            yStart + 1 * stepSize,
             "Height Above",
             configManager.getHeightAbove(),
             0,
             100,
             value -> {
-              networkSyncCallback.accept("heightAbove");
+              configManager.setHeightAbove(value);
             });
     addRenderableWidget(heightAboveField);
 
-    // Height Below Slider
+    // Row 2: Height Below
     heightBelowField =
         createSlider(
             rightColumnX,
-            yStart + row * stepSize,
+            yStart + 2 * stepSize,
             "Height Below",
             configManager.getHeightBelow(),
             0,
             100,
             value -> {
-              networkSyncCallback.accept("heightBelow");
+              configManager.setHeightBelow(value);
             });
     addRenderableWidget(heightBelowField);
 
-    row++;
-
-    // Width Left Slider
+    // Row 3: Width Left
     widthLeftField =
         createSlider(
-            leftColumnX,
-            yStart + row * stepSize,
+            rightColumnX,
+            yStart + 3 * stepSize,
             "Width Left",
             configManager.getWidthLeft(),
             0,
             100,
             value -> {
-              networkSyncCallback.accept("widthLeft");
+              configManager.setWidthLeft(value);
             });
     addRenderableWidget(widthLeftField);
 
-    // Width Right Slider
+    // Row 4: Width Right
     widthRightField =
         createSlider(
             rightColumnX,
-            yStart + row * stepSize,
+            yStart + 4 * stepSize,
             "Width Right",
             configManager.getWidthRight(),
             0,
             100,
             value -> {
-              networkSyncCallback.accept("widthRight");
+              configManager.setWidthRight(value);
             });
     addRenderableWidget(widthRightField);
 
-    row++;
-
-    // Layer Offset Slider
+    // Row 5: Layer Offset
     layerOffsetField =
         createSlider(
-            leftColumnX,
-            yStart + row * stepSize,
+            rightColumnX,
+            yStart + 5 * stepSize,
             "Layer Offset",
             configManager.getLayerOffset(),
             -64,
             256,
             value -> {
-              networkSyncCallback.accept("layerOffset");
+              configManager.setLayerOffset(value);
             });
     addRenderableWidget(layerOffsetField);
+
+    // Left column rows (explicit placement)
+    // Row 3: Vine All (leave a blank row after Non-Vineable Block List)
+    vineAllButton =
+        createToggleButton(
+            leftColumnX,
+            yStart + 3 * stepSize,
+            "Vine All",
+            configManager::getVineAll,
+            value -> {
+              configManager.setVineAll(value);
+            });
+    addRenderableWidget(vineAllButton);
+
+    // Row 4: Vineable Limit
+    vineableLimitField =
+        createSlider(
+            leftColumnX,
+            yStart + 4 * stepSize,
+            "Vineable Limit",
+            configManager.getVineableLimit(),
+            1,
+            500,
+            value -> {
+              configManager.setVineableLimit(value);
+            });
+    addRenderableWidget(vineableLimitField);
+
+    // Row 5: Hunger Per Block
+    exhaustionPerBlockField =
+        createSlider(
+            leftColumnX,
+            yStart + 5 * stepSize,
+            "Hunger Per Block",
+            (int) (configManager.getExhaustionPerBlock() * 100),
+            0,
+            1000,
+            value -> {
+              // Convert from percentage back to double (value is 0-1000, config expects 0.0-10.0)
+              double exhaustionValue = value / 100.0;
+              configManager.setExhaustionPerBlock(exhaustionValue);
+            });
+    addRenderableWidget(exhaustionPerBlockField);
   }
 
   private void addRedirectButtons() {
+    // Row 0: Vineable Block List (left)
     vineableBlockListButton =
         Button.builder(
                 Component.literal("Vineable Block List"),
@@ -228,14 +217,14 @@ public class ForgeConfigScreen extends Screen {
                           vineableBlocks,
                           updatedList -> {
                             configManager.setVineableBlocks(updatedList);
-                            networkSyncCallback.accept("vineableBlocks");
                           });
                   minecraft.setScreen(blockListScreen);
                 })
-            .bounds(leftColumnX, yStart + 5 * stepSize, boxWidth, 20)
+            .bounds(leftColumnX, yStart + 0 * stepSize, boxWidth, 20)
             .build();
     addRenderableWidget(vineableBlockListButton);
 
+    // Row 1: Non-Vineable Block List (left)
     nonVineableBlockListButton =
         Button.builder(
                 Component.literal("Non-Vineable Block List"),
@@ -248,11 +237,10 @@ public class ForgeConfigScreen extends Screen {
                           configManager.getUnvineableBlocks(),
                           updatedList -> {
                             configManager.setUnvineableBlocks(updatedList);
-                            networkSyncCallback.accept("unvineableBlocks");
                           });
                   minecraft.setScreen(blockListScreen);
                 })
-            .bounds(rightColumnX, yStart + 5 * stepSize, boxWidth, 20)
+            .bounds(leftColumnX, yStart + 1 * stepSize, boxWidth, 20)
             .build();
     addRenderableWidget(nonVineableBlockListButton);
   }
@@ -291,6 +279,8 @@ public class ForgeConfigScreen extends Screen {
 
   private void syncConfigChangesWithServer() {
     // Sync all config values with server to ensure changes are applied
+
+    // Block lists
     com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
         com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.BLOCK_LIST,
         configManager.getVineableBlocks(),
@@ -301,6 +291,54 @@ public class ForgeConfigScreen extends Screen {
         configManager.getUnvineableBlocks(),
         "unvineableBlocks");
 
+    // Boolean values
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.BOOLEAN,
+        configManager.getVineAll(),
+        "vineAll");
+
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.BOOLEAN,
+        configManager.getShapeVine(),
+        "shapeVine");
+
+    // Integer values
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.INT,
+        configManager.getVineableLimit(),
+        "vineableLimit");
+
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.INT,
+        configManager.getHeightAbove(),
+        "heightAbove");
+
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.INT,
+        configManager.getHeightBelow(),
+        "heightBelow");
+
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.INT,
+        configManager.getWidthLeft(),
+        "widthLeft");
+
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.INT,
+        configManager.getWidthRight(),
+        "widthRight");
+
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.INT,
+        configManager.getLayerOffset(),
+        "layerOffset");
+
+    // Double values
+    com.ael.viner.forge.network.packets.ConfigSyncPacket.syncConfigWithServer(
+        com.ael.viner.forge.network.packets.ConfigSyncPacket.ConfigType.DOUBLE,
+        configManager.getExhaustionPerBlock(),
+        "exhaustionPerBlock");
+
     System.out.println("[DEBUG] Config changes synced with server");
   }
 
@@ -310,12 +348,6 @@ public class ForgeConfigScreen extends Screen {
             Component.literal(label + ": " + (getter.get() ? "Enabled" : "Disabled")),
             button -> {
               boolean newValue = !getter.get();
-              // Update the config value immediately
-              if (label.equals("Vine All")) {
-                configManager.setVineAll(newValue);
-              } else if (label.equals("Shape Vine")) {
-                configManager.setShapeVine(newValue);
-              }
               setter.accept(newValue);
               button.setMessage(
                   Component.literal(label + ": " + (newValue ? "Enabled" : "Disabled")));
@@ -350,7 +382,7 @@ public class ForgeConfigScreen extends Screen {
   }
 
   @Override
-  public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+  public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
     // Use simple background without blur to avoid 1.21.8 blur frame limit issue
     guiGraphics.fill(0, 0, this.width, this.height, 0x80000000); // Semi-transparent black
 
@@ -364,7 +396,7 @@ public class ForgeConfigScreen extends Screen {
     renderTooltips(guiGraphics, mouseX, mouseY);
   }
 
-  private void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+  private void renderTooltips(@Nonnull GuiGraphics graphics, int mouseX, int mouseY) {
     var positioner = new MenuTooltipPositioner(new ScreenRectangle(0, 0, width, height));
 
     // Add tooltips for each widget
