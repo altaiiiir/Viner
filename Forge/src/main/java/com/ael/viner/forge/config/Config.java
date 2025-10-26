@@ -87,7 +87,7 @@ public class Config {
                     "#minecraft:logs",
                     "#minecraft:leaves",
                     "#forge:ores",
-                    "minecraft:skulk"),
+                    "minecraft:sculk"),
                 BLOCK_TAG_VALID);
 
     // Define unvineable blocks setting with a validation pattern
