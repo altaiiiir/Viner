@@ -15,6 +15,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -83,7 +85,7 @@ public class MiningUtils {
 
       boolean isIceWithoutSilkTouch =
           level.getBlockState(blockPos).getBlock() == Blocks.ICE
-              && !tool.getEnchantments().keySet().contains(Enchantments.SILK_TOUCH);
+              && getEnchantmentLevel(tool, Enchantments.SILK_TOUCH) == 0;
       level.setBlockAndUpdate(
           blockPos,
           isIceWithoutSilkTouch
@@ -494,17 +496,18 @@ public class MiningUtils {
   }
 
   /**
-   * Retrieves the level of the Unbreaking enchantment on a specified tool.
+   * Retrieves the level of a specified enchantment on a specified tool.
    *
-   * @param tool The tool whose Unbreaking enchantment level is to be checked.
-   * @return The level of the Unbreaking enchantment, or 0 if not present.
+   * @param tool The tool whose enchantment level is to be checked.
+   * @param enchantment The enchantment to check.
+   * @return The level of the enchantment, or 0 if not present.
    */
-  public static int getUnbreakingLevel(ItemStack tool) {
+  public static int getEnchantmentLevel(ItemStack tool, ResourceKey<Enchantment> enchantment) {
     return tool.getEnchantments().entrySet().stream()
-        .filter(entry -> entry.getKey() == Enchantments.UNBREAKING)
+        .filter(entry -> entry.getKey().is(enchantment))
+        .mapToInt(entry -> entry.getIntValue())
         .findFirst()
-        .get()
-        .getIntValue();
+        .orElse(0);
   }
 
   /**
@@ -525,10 +528,12 @@ public class MiningUtils {
    * @return A boolean containing whether the applyDamage function broke the weapon
    */
   public static boolean applyDamage(@NotNull ItemStack tool, int damage) {
-
     if (!tool.isDamageableItem()) return false;
 
-    int unbreakingLevel = getUnbreakingLevel(tool);
+    // Stop immediately if tool is already at 1 durability
+    if (tool.getDamageValue() >= tool.getMaxDamage() - 1) return true;
+
+    int unbreakingLevel = getEnchantmentLevel(tool, Enchantments.UNBREAKING);
     double chance = getDamageChance(unbreakingLevel);
     double random = Math.random();
 

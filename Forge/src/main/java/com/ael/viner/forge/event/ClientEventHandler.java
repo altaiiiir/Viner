@@ -81,7 +81,7 @@ class ClientGameplayEventHandler {
   private static boolean vineKeyPressed = false;
 
   @SubscribeEvent
-  public static void onClientTick(TickEvent.ClientTickEvent event) {
+  public static void onClientTick(TickEvent.ClientTickEvent.Post event) {
     if (Minecraft.getInstance().player == null) {
       return;
     }
@@ -92,7 +92,7 @@ class ClientGameplayEventHandler {
   }
 
   @SubscribeEvent
-  public static void onClientTickConfig(TickEvent.ClientTickEvent event) {
+  public static void onClientTickConfig(TickEvent.ClientTickEvent.Post event) {
     Minecraft mc = Minecraft.getInstance();
     if (mc.screen == null && ClientEventHandler.VINER_CONFIG_KEY_BINDING.isDown()) {
       mc.setScreen(new ForgeConfigScreen());
