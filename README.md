@@ -4,11 +4,15 @@
 
 Viner is an innovative Minecraft mod inspired by the classic Veinminer, designed to enhance the mining experience by enabling players to mine entire veins of blocks in one go. This efficiency-focused mod saves time and effort, making resource gathering more enjoyable and less tedious.
 
+## Download Links
+- https://modrinth.com/mod/viner
+- https://www.curseforge.com/minecraft/mc-mods/viner
+
 ## Features
 
 - **Vein Mining Capability:** Allows players to mine all connected blocks of the same type, significantly speeding up mining activities.
 - **Customizable Block Lists:** Users can configure which blocks are vein-minable via the mod's settings, tailoring the experience to their preferences.
-- **Advanced Packet Handling:** Implements custom network packets, such as `VeinMiningPacket`, `VinerKeyPressedPacket`, and `MouseScrollPacket`, to manage data transmission efficiently between client and server.
+- **Advanced Packet Handling:** Implements custom network packets, such as `VeinMiningPacket`, and `VinerKeyPressedPacket`, to manage data transmission efficiently between client and server.
 - **Dynamic Registries:** Utilizes `VinerBlockRegistry` and `VinerPlayerRegistry` for flexible and efficient block and player management.
 - **Optimized Mining Algorithms:** Employs sophisticated algorithms to determine vein boundaries and ensure efficient mining without unnecessary block checks.
 - **Mining Algorithm:** Users can configure the shape of the blocks to mine by implementing a configurable block traversal algorithm.
