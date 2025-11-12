@@ -19,7 +19,10 @@ build
 
 # other
 eclipse
+.cursor
+.vscode
 run
 
 # Files from Forge MDK
 forge*changelog.txt
+Forge/logs
